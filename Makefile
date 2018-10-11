@@ -118,7 +118,7 @@ define PANDOC_BIB
 endef
 ## Markdown extensions
 define PANDOC_MDEXT
-yaml_metadata_block+header_attributes+abbreviations+pipe_tables+implicit_figures+definition_lists+fancy_lists+latex_macros
++abbreviations
 endef
 ## Pandoc options for Mardown/HTML generations
 define PANDOC_MDH_FLAGS
