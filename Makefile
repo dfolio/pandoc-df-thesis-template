@@ -260,7 +260,7 @@ DOCX_DEPS	+= $(MDH) $(MDH_DEPS) $(TEMPLATEDIR)/template.docx $(FIG_EMF)
 ODT_DEPS	+= $(MDH) $(MDH_DEPS) $(TEMPLATEDIR)/template.odt  $(FIG_SVG)
 MDT_DEPS	+= $(MDT_FILES) $(INFILES) $(PPFILES) $(VARSDATA) $(BIB_DEPS)\
  	$(GLOSSARIES).tex
-TEX_BIB_DEPS  += $(BIBDEPS) $(BBL)
+TEX_BIB_DEPS  += $(BIB_DEPS) $(BBL)
 TEX_DEPS	    += $(MDT_FILES_1) $(INFILES) $(PPFILES) $(VARSDATA) \
   $(BIB_DEPS) $(FIG_SVG) $(FIG_PDF)\
   $(TEMPLATEDIR)/template.latex $(TEMPLATEDIR)/pandoc-thesis.sty\
