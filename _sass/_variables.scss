@@ -1,0 +1,101 @@
+// Variables
+//
+// Variables should follow the `$component-state-property-size` formula for
+// consistent naming. Ex: $nav-link-disabled-color and $modal-content-box-shadow-xs.
+
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+
+$enable-rounded:            true;
+$enable-shadows:            true;
+$enable-gradients:          true;
+$enable-transitions:        true;
+$enable-hover-media-query:  false;// Deprecated, no longer affects any compiled CSS
+$enable-grid-classes:       true;
+$enable-print-styles:       false;
+
+// Fonts
+$font-family-serif:           "TeX Gyre Termes",Times, "Latin Modern Roman","Computer Modern", serif;
+$font-family-base:            $font-family-serif;
+$font-size-sc:                0.85;
+$font-size-small:             $font-size-sm;
+$font-size-foot:         max(($font-size-base * $font-size-sc),0.751rem);
+$font-size-footnote:     max(($font-size-base * .86),0.751rem);
+$font-weight-light:           200 !default;
+$font-weight-bold:            700 !default;
+
+// Color system
+$BlueDark:    rgba(#455a64, 1);
+$BlueLight:   rgba(#607d8b, 1);
+$PastelGray:  rgba(#ccc, 1);
+$Coquelicot:  rgba(#f30, 1);
+$TurquoiseLight:    rgba(#c2ebef, 1);
+$CyanLight:   rgba(#cff, 1);
+$CyanDark:    rgba(#3ff, 1);
+//$Canary:      rgba(#ff9, 1);
+
+$Dark:        rgba(adjust-hue(darken(#292b2c, 10%), 25deg), 1);
+$Light:       rgba(adjust-hue(darken(#eceeef, 10%), 25deg), 0.8);
+
+$primary:       rgba(#607d8b,1);
+$primary-dark:  $BlueDark;
+$primary-light: $Light;
+$secondary:     $TurquoiseLight;
+$accent:        $Coquelicot; // accentuation & active
+$success:       $green !default;
+$info:          $CyanDark;
+$warning:       $yellow !default;
+$disclaimer:    $orange !default;
+$danger:        $Coquelicot;
+$light:         $Light;
+$dark:          $Dark;
+
+// Body
+$text-color:           $body-color ;
+$brand-color:          $primary ;
+$thesis-dark:          $Dark !default;
+$thesis-info:          $info !default;
+$thesis-disclaimer:    $disclaimer!default;
+$thesis-warning:       $warning !default;
+$thesis-danger:        $danger !default;
+
+$thesis-banner-bg:     rgba($primary-dark, 0.9);
+$thesis-banner-fg:     rgba(white,0.9);
+$thesis-banner-active: rgba($accent,0.8);
+
+$breadcrumb-bg:                     rgba($secondary,0.4);
+$breadcrumb-divider-color:          rgba($Dark,0.8);
+$breadcrumb-active-color:           rgba($accent,0.8);
+
+// Jumbotron - pagetitle
+$pagetitle-padding:                 2rem !default;
+$pagetitle-bg:                      $thesis-banner-bg;
+$pagetitle-fg:                      $thesis-banner-fg;
+$font-size-toc:                max(($font-size-base * .85),0.751rem);
+$spacer-toc:                        .5rem;
+
+// Spacing
+$spacer:                      2rem;
+$spacing-unit: $spacer;
+$grid-gutter-width:           1rem !default;
+$nav-sticky-top:              6rem;
+
+//
+$blockquote-font-size:        ($font-size-base * 0.95) !default;
+
+// Cards
+$card-spacer-y:                     .75rem !default;
+$card-spacer-x:                     1.25rem !default;
+$card-border-width:                 $border-width !default;
+$card-border-radius:                $border-radius !default;
+$card-border-color:                 rgba($black, .125) !default;
+$card-inner-border-radius:          calc(#{$card-border-radius} - #{$card-border-width}) !default;
+$card-cap-bg:                       rgba($black, .03) !default;
+$card-bg:                           $light !default;
+$card-img-overlay-padding:          1.25rem !default;
+$card-group-margin:                 ($grid-gutter-width / 2) !default;
+$card-deck-margin:                  $card-group-margin !default;
+
+$card-columns-count:                3 !default;
+$card-columns-gap:                  1.25rem !default;
+$card-columns-margin:               $card-spacer-y !default;

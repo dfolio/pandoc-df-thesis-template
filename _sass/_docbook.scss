@@ -1,0 +1,544 @@
+// stylelint-disable at-rule-no-vendor-prefix, declaration-no-important, selector-no-qualifying-type, property-no-vendor-prefix
+
+.thesis-banner {
+  @include make-container;
+
+  flex-direction: row !important;
+  align-items: center !important;
+  min-height: 2rem;
+  background-color: $thesis-banner-bg;
+  margin-bottom: $spacer;
+
+  &, a {
+    //text-decoration: none;
+    color: $thesis-banner-fg !important;
+    -webkit-transition: color 0.5s;
+  }
+
+  a:hover {
+    color: $TurquoiseLight;
+    background-color: transparent;
+  }
+
+  box-shadow: 0 0.5rem 1rem transparentize($thesis-banner-bg, 0.05), inset 0 -1px 0 transparentize($thesis-banner-bg, 0.1);
+
+  .navbar-nav, header,
+  .breadcrumbs, .banner-nav {
+    @include make-container;
+
+    //margin: 0 0 0.5rem;
+    padding: 0;
+    display: flex;
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+
+  // breadcrumbs
+  .breadcrumbs {
+    background-color: $breadcrumb-bg;
+    box-shadow: 0 0.5rem 1rem rgba(darken($breadcrumb-bg, 60%), 0.05), inset 0 -1px 0 rgba(darken($breadcrumb-bg, 60%), 0.1);
+
+    @include border-radius($breadcrumb-border-radius);
+
+    .breadcrumb-item {
+      //font-weight: 600;
+      margin: 0 0.5rem;
+
+      // IE9-11 hack to properly handle hyperlink underlines for breadcrumbs built
+      // without `<ul>`s. The `::before` pseudo-element generates an element
+      // *within* the .breadcrumb-item and thereby inherits the `text-decoration`.
+      //
+      // To trick IE into suppressing the underline, we give the pseudo-element an
+      // underline and then immediately remove it.
+      + .breadcrumb-item:hover::before {
+        text-decoration: underline;
+      }
+
+      // stylelint-disable-next-line no-duplicate-selectors
+      + .breadcrumb-item:hover::before {
+        text-decoration: none;
+      }
+
+      &.active {
+        color: $breadcrumb-active-color;
+      }
+    }
+
+    .breadcrumb-node {
+      font-weight: 800;
+
+      &.active {
+        color: $breadcrumb-active-color;
+      }
+    }
+  }
+}
+
+.banner-nav, .footer-nav, .footer-heading {
+  &, nav, .pagination {
+    width: 100%;
+  }
+
+  .pagination {
+    margin: 0;
+    padding: 0 1rem;
+  }
+
+  .nav-prev {}
+
+  .nav-up {}
+
+  .nav-next {}
+
+  a {
+    //text-decoration: none;
+    color: $thesis-banner-fg;
+    -webkit-transition: color 0.5s;
+  }
+
+  a:hover {
+    color: $TurquoiseLight;
+    background-color: transparent;
+  }
+}
+
+.footer {
+  margin: 0;
+  margin-top: $spacer;
+  font-size: $font-size-foot;
+
+  @include make-row;
+
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex-shrink: 0;
+  color: rgba($thesis-banner-fg, 0.6);
+  background-color: rgba(darken($thesis-banner-bg, 20%), 0.8);
+  border-top: 2px solid darken($thesis-banner-bg, 80%);
+
+  @supports (position: sticky) {
+    position: sticky;
+    bottom: 0;
+    z-index: $zindex-sticky;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .footer-heading {
+    font-size: $font-size-small;
+    font-weight: 700;
+    vertical-align: middle;
+  }
+
+  .thesis-license {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    text-align: left;
+  }
+}
+
+.btn-head, .btn-foot {
+  @include button-size($btn-padding-y, $btn-padding-x, $font-size-base, $btn-line-height, $btn-border-radius);
+  @include transition($btn-transition);
+  @include button-variant(rgba($thesis-banner-bg, 0.6), rgba($thesis-banner-fg, 0.6));
+
+  font-family: $font-family-sans-serif;
+  font-weight: 700;
+}
+
+.thesis-titlepage {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  height: 98vh;
+  padding: $pagetitle-padding ($pagetitle-padding / 2);
+  margin: 0 auto $pagetitle-padding auto;
+  color: $pagetitle-fg !important;
+  -webkit-transition: color .5s;
+  background-color: $pagetitle-bg;
+  box-shadow: 0 0.5rem 1rem transparentize($pagetitle-bg, 0.05), inset 0 -1px 0 transparentize($pagetitle-bg, 0.1);
+
+  @include border-radius($border-radius-lg);
+  @include make-container;
+  @include make-row;
+  @include media-breakpoint-up(sm) {
+    padding: ($pagetitle-padding * 2) $pagetitle-padding;
+  }
+
+
+  .thesis-header {
+    @include make-col-ready;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .title {
+    @include media-breakpoint-up(sm) {
+      font-size: 5rem;
+    }
+
+
+    line-height: inherit;
+    border: 0;
+    margin: $spacer auto;
+    font-variant: small-caps;
+    text-transform: capitalize !important;
+    text-align: center;
+  }
+
+  h1, .title, .subtitle, .authors {
+    font-weight: 900;
+    color: rgba($pagetitle-fg, 0.98);
+
+    //color: mix(rgba($accent,0.2),white);
+
+  }
+
+  .subtitle {
+    margin: ($spacer / 2) auto;
+  }
+
+  .authorgroup {
+    .author {
+      @include media-breakpoint-up(sm) {
+        font-size: 2.5rem;
+      }
+
+
+      margin: ($spacer / 3) auto;
+      padding: 0;
+      color: rgba($pagetitle-fg, 0.9);
+      font-variant: small-caps;
+    }
+  }
+
+  .affiliation, .email, .url, .date {
+    font-size: 1rem;
+    font-variant: normal;
+    color: rgba($pagetitle-fg, 0.8);
+  }
+
+  .date {
+    font-weight: 600;
+  }
+
+  .abstract, .copyright {
+    text-align: justify;
+    font-weight: 400;
+  }
+
+  .abstract {
+    display: none;
+    align-items: flex-start !important;
+
+    p {
+      margin: 0;
+      padding: 0;
+    }
+
+    @include media-breakpoint-up(sm) {
+      display: block;
+      width: 100%;
+      font-size: $font-size-small;
+
+      @supports (position: sticky) {
+        position: sticky;
+        flex-shrink: 0;
+        overflow-y: auto;
+        z-index: 1000;
+        bottom: $spacer / 4;
+        left: $spacer / 4;
+      }
+    }
+  }
+}
+
+.toc, .list-of-figures, .list-of-tables {
+  order: 2;
+  text-overflow: ellipsis;
+  font-size: $font-size-toc;
+  line-height: $font-size-toc * 1.25;
+
+  & > ul {
+    padding-top: $spacer-toc * 4;
+    padding-right: $spacer-toc / 4;
+    font-size: $font-size-toc * 1.25;
+    line-height: $font-size-toc * 1.5;
+
+    li {
+      font-weight: 600;
+    }
+  }
+
+  ul {
+    list-style: none;
+    padding-left: $spacer-toc;
+  }
+
+  li {
+    display: block;
+    padding: 0 0 ($spacer-toc / 2) ($spacer-toc / 2);
+    color: rgba($primary-dark, 0.8);
+    -webkit-transition: color .5s;
+    font-family: $font-family-sans-serif;
+
+    &:hover, & > a:hover {
+      color: rgba($accent, 0.9);
+      text-decoration: none;
+    }
+
+    & > a {
+      color: rgba($primary-dark, 0.85);
+    }
+  }
+
+  li li {
+    font-weight: 400 !important;
+  }
+
+  //ul ul ul {display:none;}
+}
+
+//.toc{ &>ul{ &>li::before{content: "Chapter ";}} }
+
+.toc-title {
+  page-break-before: always;
+  margin: $spacer auto;
+  padding-top: $spacer;
+  font-size: 2rem;
+  line-height: 2.5rem;
+  font-variant: small-caps;
+  border-bottom: 2pt solid $BlueDark;
+  text-align: right;
+  font-weight: 900;
+}
+
+.chapter .titlepage h1.title::before {
+  content: "Chapter ";
+}
+
+.page-toc {
+  @supports (position: sticky) {
+    position: sticky;
+    overflow-y: auto;
+    top: 2rem;
+    right: 0;
+    left: auto;
+    height: calc(100vh - 8rem);
+  }
+
+  order: 2;
+  padding: 0;
+  text-align: left;
+  color: rgba($primary-dark, 0.6);
+  -webkit-transition: color .5s;
+
+  &:hover {
+    color: rgba($accent, 0.8);
+    text-decoration: none;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+  }
+
+  ul.division-toc {
+    padding: 0 0.5rem;
+    border-right: 1px solid rgba($primary-dark, 0.6);
+
+    & > li {
+      padding-top: 0.5rem;
+
+      & > a {
+        font-weight: bolder;
+      }
+    }
+
+    ul {
+      padding: 0 0.25rem;
+
+      ul {
+        display: none;
+        padding: 0 0.25rem;
+      }
+    }
+
+    li {
+      .chapter, .section {
+        margin: 0;
+        padding: 0;
+        font-family: $font-family-sans-serif;
+        white-space: wrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: left;
+        font-size: $font-size-foot !important;
+        font-weight: 500;
+
+        a {
+          padding: 0;
+          color: #99979c;
+
+          &:hover {
+            color: $accent;
+            text-decoration: none;
+          }
+        }
+      }
+    }
+  }
+}
+
+#sec_glossary {
+  dl {
+    max-width: 100%;
+
+    //padding: auto ($spacer / 2);
+    //flex-wrap: nowrap;
+    @include make-row;
+
+    //justify-content: flex-start !important;
+    //border: 1px solid $Coquelicot;
+
+  }
+
+  dt, dd {
+    @include make-col-ready;
+  }
+
+  dt {
+    @include make-col(6);
+    @include media-breakpoint-up(sm) {
+      @include make-col(3);
+    }
+
+
+    align-self: start;
+    background-color: $Light;
+  }
+
+  dd {
+    @include make-col(6);
+    @include media-breakpoint-up(sm) {
+      @include make-col(9);
+    }
+
+
+    align-self: end;
+
+    //background-color:$Light;
+
+  }
+}
+
+/********************************/
+/* From docbook/xsl-stylesheets */
+/********************************/
+
+//figure, .figure, .table {display: block;}
+
+
+/* start of styles in block.xsl */
+.formalpara-title {
+  font-weight: bold;
+}
+
+div.blockquote-title {
+  font-weight: bold;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+span.msgmain-title {
+  font-weight: bold;
+}
+
+span.msgsub-title {
+  font-weight: bold;
+}
+
+span.msgrel-title {
+  font-weight: bold;
+}
+
+div.msglevel, div.msgorig, div.msgaud {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+span.msglevel-title, span.msgorig-title, span.msgaud-title {
+  font-weight: bold;
+}
+
+div.msgexplan {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+span.msgexplan-title {
+  font-weight: bold;
+}
+
+/* end of styles in block.xsl */
+/********************************/
+
+/********************************/
+/* start of styles for glossary/glossterm/acronym/ */
+abbr, .glossterm {
+  font-style: normal;
+}
+
+abbr, acronym, .abbrev, .acronym {
+  font-size: 95%;
+  text-transform: uppercase;
+}
+
+a.glossterm {
+  text-decoration: underline dotted;
+  cursor: help;
+}
+
+abbr, acronym, .abbrev, .acronym, a.glossterm {
+  color: rgba(adjust-hue(darken($BlueDark, 50%), 25deg), 0.8);
+}
+
+/* end of styles in autotoc.xsl */
+/********************************/
+
+/********************************/
+/* start of styles in autotoc.xsl */
+
+/* end of styles in autotoc.xsl */
+/********************************/
+
+/********************************/
+/* start of styles in formal.xsl */
+
+/* end of styles in formal.xsl */
+/********************************/
+
+/********************************/
+/* start of styles in verbatim.xsl */
+div.programlisting {
+  white-space: pre;
+  font-family: monospace;
+}
+
+div.screen {
+  white-space: pre;
+  font-family: monospace;
+}
+
+div.synopsis {
+  white-space: pre;
+  font-family: monospace;
+}
+
+/* end of styles in verbatim.xsl */
+/********************************/

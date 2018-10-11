@@ -1,0 +1,26 @@
+---
+#Global (pandoc) metadata
+lang: en-US
+## pandoc-citeproc metadata
+link-citations: true
+## pandoc-crossref metadata
+linkReferences: true
+cref: true
+chapters: True
+chaptersDepth: 1
+sectionsDepth: 3
+numberSections: True
+secPrefix:
+  - 'Section'
+  - 'Sections'
+autoSectionLabels: true
+codeBlockCaptions: false
+figureTitle: 'Figure'
+figPrefix:
+  - 'Figure'
+  - 'Figures'
+tblLabels: arabic
+tblPrefix:
+  - 'Table'
+  - 'Tables'
+...

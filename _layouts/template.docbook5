@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<?xml-model href="http://docbook.org/xml/5.0/rng/docbook.rng" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<?xml-model href="http://docbook.org/xml/5.0/rng/docbook.rng" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<!DOCTYPE book>
+<book
+$if(lang)$
+  xml:lang="$lang$"
+$endif$
+  xmlns="http://docbook.org/ns/docbook" version="5.0"
+$if(mathml)$
+  xmlns:mml="http://www.w3.org/1998/Math/MathML"
+$endif$
+  xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <info $if(lang)$ xml:lang="$lang$"$endif$>
+    <title>$title$</title>
+$if(subtitle)$
+    <subtitle>$subtitle$</subtitle>
+$endif$
+$if(subject)$
+    <subjectset><subject><subjectterm>$subject$</subjectterm></subject></subjectset>
+$endif$
+$if(keywords)$
+    <keywordset>
+      $for(keywords)$<keyword>$keywords$</keyword>$endfor$
+    </keywordset>
+$endif$
+$if(authors)$
+    <authorgroup>
+  $for(authors)$
+      <author>
+    $if(authors.name)$
+      <personname>$if(author)$$author$$else$$authors.name$$endif$</personname>
+      $if(authors.affiliation)$<affiliation><org><orgname>$authors.affiliation$</orgname></org></affiliation>$endif$
+      $if(authors.email)$<email>$authors.email$</email>$endif$
+      $if(authors.url)$<uri>$authors.url$</uri>$endif$
+    $else$
+      $author$
+    $endif$
+      </author>
+  $endfor$
+    </authorgroup>
+$else$
+  $if(author)$
+    <author>$author$</author>
+  $else$
+    $if(author-meta)$
+      <author>$author-meta$</author>
+    $endif$
+  $endif$
+$endif$
+$if(date)$
+    <date>$date$</date>
+$endif$
+$if(rights)$
+    <copyright><year>2018</year>
+    $if(holder)$<holder>$holder$</holder>$else$
+    $if(author-meta)$<holder>$author-meta$</holder>$else$
+    $if(authors)$$for(author)$<holder>$if(authors.name)$$authors.name$  $endif$</holder>$endfor$$endif$$endif$
+    $endif$
+    </copyright>
+$endif$
+$if(abstract)$
+    <abstract><para>$abstract$</para></abstract>
+$endif$
+  </info>
+$for(include-before)$
+$include-before$
+$endfor$
+$body$
+$for(include-after)$
+$include-after$
+$endfor$
+$if(glossary)$
+  <glossary role="auto"  xml:id='sec-glossary'>
+    <glossentry>
+      <glossterm>Irrelevant</glossterm>
+      <glossdef>
+      <para>If you can see this, the document was processed incorrectly. Use
+      the <parameter>glossary.collection</parameter> parameter.</para>
+      </glossdef>
+    </glossentry>
+  </glossary>
+$endif$
+</book>

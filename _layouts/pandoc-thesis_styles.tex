@@ -1,0 +1,90 @@
+% $Id: 4bba9db12cfa96358ea34e23e2b6c97f5eae7b1f $
+% !TeX encoding = UTF-8
+% !TeX program = lualatex
+
+% LaTeX styling (e.g. color/font) should be defined here
+
+% Colors
+\definecolor{blue1}{HTML}{2E74B5}       % light blue
+\definecolor{blue2}{HTML}{1F4E79}       % light blue
+\definecolor{blue3}{rgb}{0.22,0.45,0.75}% light blue
+\definecolor{blue4}{HTML}{2E1F79}       % light blue
+\definecolor{gray0}{rgb}{0.65,0.65,0.65}% light gray
+\definecolor{gray1}{rgb}{0.45,0.45,0.45}% light gray
+\definecolor{gray2}{rgb}{0.25,0.25,0.3} % light gray
+\definecolor{French1}{HTML}{318CE7}     % Bleu de France
+\definecolor{French}{HTML}{00B7EB}      % Cyan (process)
+\definecolor{green1}{HTML}{483C32}      % Dark lava
+\definecolor{green2}{HTML}{556B2F}      % Dark olive green
+
+\definecolor{color0}{named}{black}% black
+%\definecolor{color1}{rgb}{0.22,0.45,0.75}% light blue
+\definecolor{color1}{named}{blue1}
+\definecolor{color2}{rgb}{0.45,0.45,0.45}% dark grey
+\definecolor{color3}{rgb}{0,0,0}% tertiary scheme color
+
+\definecolor{part}{named}{blue2}
+\definecolor{chapterrule}{named}{blue1}
+\definecolor{chapter}{named}{blue2}
+\definecolor{section}{named}{blue2}
+\definecolor{subsection}{named}{blue1}
+\definecolor{subsubsection}{named}{color0}
+\definecolor{paragraph}{named}{color0}
+
+%Citation link
+\definecolor{citecolor}{named}{green1}
+\definecolor{urlcolor}{HTML}{0056b3}
+%\definecolor{linkcolor}{named}{1F4E79}
+\colorlet{linkcolor}{blue4!60!Black}
+\hypersetup{linkcolor=linkcolor,citecolor=citecolor,urlcolor=urlcolor}
+
+%% fonts
+% chapter/section/...
+\def\partfont{\normalfont\fontsize{44}{50}\sffamily\mdseries\scshape\color{part}}
+\def\chapterfont{\normalfont\Huge\sffamily\mdseries\scshape}
+\ChNameVar{\chapterfont\color{chapter}}
+\ChNumVar{\chapterfont\rmfamily\bfseries\color{chapter}}
+\ChTitleVar{\chapterfont\color{chapter}}
+\ChRuleWidth{2pt}
+
+\def\sectionfont{\normalfont\LARGE\sffamily\mdseries\scshape}
+\def\subsectionfont{\normalfont\Large\sffamily\bfseries}
+\def\subsubsectionfont{\normalfont\large\sffamily\bfseries}
+\def\paragraphfont{\normalfont\normalsize\sffamily\bfseries}
+\def\subparagraphfont{\normalfont\normalsize\sffamily\slshape}
+
+% Toc chapter/section/...
+\def\lpartfont{\normalfont\Large\rmfamily\mdseries\scshape\color{part}}
+\def\lchapterfont{\normalfont\large\rmfamily\mdseries\scshape\color{chapter}}
+\def\lsectionfont{\normalfont\rmfamily\bfseries}
+\def\lsubsectionfont{\normalfont\normalsize\sffamily}
+\def\lsubsubsectionfont{\normalfont\small\sffamily}
+\def\lparagraphfont{\normalfont\small}
+\def\lsubparagraphfont{\normalfont\small}
+
+% Head/foot/...
+\def\headfont{\normalfont\footnotesize\color{gray2}}
+\def\footfont{\normalfont\scriptsize}
+\let\headfootfont\headfont
+
+% Figure/table...
+\captionsetup{font={small}}
+
+%Lang
+
+\newcommand\latinfont[1]{{\em #1}}%
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \newcommand\frenchfont[1]{{#1}}
+\else
+  \newfontfamily{\frenchfont}{CMU Serif}[Scale=0.98,SlantedFont   =cmunsl.otf]
+\fi
+\newcommand\Latinfont[1]{\latinfont{#1}}
+\newcommand\Frenchfont[1]{\frenchfont{\color{French!10!black}#1}}%
+\newcommand\Germanfont[1]{#1}
+
+
+\def\UrlFont{\ttfamily}
+
+%% Glosssry
+\renewcommand*{\glsnamefont}[1]{{#1}} %Change acronym name font %
+%\renewcommand*{\acronymfont}[1]{\textsf{#1}}

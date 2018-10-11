@@ -1,0 +1,50 @@
+@charset "utf-8";
+@import "bootstrap/scss/functions";
+$font-size-toc:               1.125rem;
+$btn-padding-y:               0.125rem;
+$btn-padding-x:               0.25rem;
+$btn-line-height:             1.125;
+// Required
+@import "bootstrap/scss/variables";
+@import "variables";
+@import "bootstrap/scss/mixins";
+
+// Optional
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/images";
+@import "bootstrap/scss/code";
+@import "bootstrap/scss/grid";
+
+// Below select mixins by hand
+// Utilities
+@import "bootstrap/scss/mixins/buttons";
+@import "bootstrap/scss/mixins/screen-reader";
+@import "bootstrap/scss/mixins/size";
+@import "bootstrap/scss/mixins/reset-text";
+@import "bootstrap/scss/mixins/text-emphasis";
+// Components
+@import "bootstrap/scss/mixins/lists";
+@import "bootstrap/scss/mixins/table-row";
+// Skins
+@import "bootstrap/scss/mixins/background-variant";
+@import "bootstrap/scss/mixins/border-radius";
+@import "bootstrap/scss/mixins/box-shadow";
+@import "bootstrap/scss/mixins/gradients";
+// Layout
+@import "bootstrap/scss/mixins/clearfix";
+@import "bootstrap/scss/mixins/float";
+
+// other (necessary?) bootstrap stuff
+@import "bootstrap/scss/nav";
+@import "bootstrap/scss/navbar";
+@import "bootstrap/scss/tables";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/card";
+@import "bootstrap/scss/alert";
+@import "bootstrap/scss/media";
+@import "bootstrap/scss/utilities";
+
+// Local styling
+@import "layout";
+@import "docbook";

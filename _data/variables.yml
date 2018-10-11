@@ -1,0 +1,83 @@
+---
+#Global (pandoc) variables
+draft: true
+lang: en
+title: 'The thesis title'
+subtitle: 'with this subtitle'
+subject: 'the subject or description'
+authors:
+  - name: 'Firstname Surname'
+    ID: AnIdentifier
+    affiliation: 'The author affiliation.'
+    email: 'Firstname.Surname@email.com'
+    url: 'dfolio.free.fr'
+institute: 'INSA Centre Val de Loire,  University of Orléans, PRISME Laboratory EA4229, Bourges, France'
+tags: ['microrobotics', 'robotics', 'modeling', 'control']
+keywords: ['microrobotics', 'robotics', 'modeling', 'control']
+rights: '© 2018 D. Folio, CC-BY-4.0'
+holder:  D. Folio
+author-meta: 'D. Folio'
+abstract: |
+  This is the abstract.
+
+toc: true
+toc-depth: 3
+lof: true
+lot: true
+
+## HTML template variables
+css_html:
+  - css: 'assets/css/pandoc_thesis.css'
+    media: 'all'
+  - css: 'assets/css/pandoc_thesis_print.css'
+    media: 'print'
+
+## LaTeX template variables
+colorlinks: true
+verbose: true
+documentclass: book
+classoption: ['openright','twoside','pdfa']
+fontsize: 11pt
+indent: true
+mathfont: latinmodern-math.otf
+mathfontoptions:
+  - Scale=MatchUppercase
+polyglossia-otherlangs:
+  - name: french
+    options:
+  - name: german
+    options:
+  - name: latin
+    options:
+papersize: a4
+geometry: ['twoside','onecolumn','asymmetric','nomarginpar','bindingoffset=-1cm',
+  'heightrounded','includeheadfoot','hmargin=3cm','vmargin=2.5cm',
+  'headheight=16pt','headsep=0.75cm','footskip=0.8cm']
+graphics: true
+graphics-path: ['./','../','assets/fig/','assets/media/']  
+
+glossaries: 
+  - nomain
+  - acronym
+  - section
+  - nonumberlist
+  - toc 
+  - xindy
+  - numberedsection=nameref
+biblio-title: 'References'
+biblatex: true
+biblatexoptions:
+  - backend=biber
+  - natbib=true
+  - citestyle=numeric
+  - url=true
+  - doi=true
+  - eprint=false
+  - dashed=false
+  
+natbib: false
+natbib-options: ['sort','square', 'nonamebreak','comma','numbers']
+biblio-style: 'ieee'
+biblio-dir-prefix: '../'
+
+---

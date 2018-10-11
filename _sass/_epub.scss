@@ -1,0 +1,97 @@
+
+@import "common";
+//
+header p {text-align:center;}
+
+/*  Disable hyphenation for headings to avoid single-syllable-lines.*/
+h1,h2 {
+  -epub-hyphens: none;
+-webkit-hyphens: none;
+   -moz-hyphens: none;
+        hyphens: none;
+}
+/*  Shortcodes for page-break rules.
+    Use data attributes to designate if and how the page should be broken before, inside or after an element.
+*/
+h1, h2, h3, h4, h5, h6,
+table, img, figure, video,
+[data-page-break~=inside][data-page-break~=avoid] { page-break-inside:  avoid; }
+[data-page-break~=after]                          { page-break-after:  always; }
+h1, h2, h3, h4, h5, h6,
+[data-page-break~=after][data-page-break~=avoid]  { page-break-after:   avoid; }
+[data-page-break~=before]                         { page-break-before: always; }
+[data-page-break~=before][data-page-break~=avoid] { page-break-before:  avoid; }
+img[data-page-break~=before]                      { page-break-before:   left; }
+
+//titlepage
+.thesis-header {
+  font-family: $font-family-sans-serif;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  height: 95vh;
+
+  padding: $pagetitle-padding ($pagetitle-padding / 2);
+  margin: 0 auto $pagetitle-padding auto;
+  color: $pagetitle-fg!important;
+  -webkit-transition: color .5s;
+  background-color: $pagetitle-bg;
+  box-shadow: 0 .5rem 1rem transparentize($pagetitle-bg,.05),
+        inset 0 -1px  0    transparentize($pagetitle-bg, .1);
+  @include border-radius($border-radius-lg);
+  @include make-row();
+  align-items: center;
+  @include media-breakpoint-up(sm) {
+    padding: ($pagetitle-padding * 2) $pagetitle-padding;
+  }
+
+  div, p {
+    @include make-col-ready();
+    width:100%;
+    text-align:center;
+  }
+
+  h1.title, .subtitle ,.author{
+    font-weight:900;
+  }
+  h1.title {
+    font-variant: small-caps;
+    text-transform: capitalize !important;
+    text-align: center;
+    margin:1.5rem auto;
+    color: rgba($pagetitle-fg,0.98);
+  }
+  .author {
+    font-variant: small-caps;
+    .affiliation {
+      display: block;
+      margin-top: 1rem;
+      font-weight:400;
+    }
+  }
+  .affiliation, .date{
+    font-size: 1rem;
+    font-variant: normal;
+    font-weight:600;
+  }
+  .rights{
+    font-size: $font-size-footnote;
+  }
+}
+
+//toc
+ol.toc { padding: 0; margin-left: 1em; }
+ol.toc li { list-style-type: none; margin: 0; padding: 0; }
+a.footnote-ref { vertical-align: super; }
+
+// body content
+/* Set the minimum amount of lines to show up on a seperate page. (There is not much support for this at the moment.) */
+
+/*  Turn on hyphenation for paragraphs and captions only. */
+p, figcaption, blockquote {
+  overflow-wrap: break-word;
+  -epub-hyphens: auto;
+-webkit-hyphens: auto;
+   -moz-hyphens: auto;
+        hyphens: auto;
+     text-align: justify;
+}

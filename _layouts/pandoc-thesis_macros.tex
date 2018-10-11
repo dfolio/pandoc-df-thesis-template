@@ -1,0 +1,67 @@
+% $Id: f9a63c2145df811f9519b3d91f06453c98765111 $
+% !TeX encoding = UTF-8
+% !TeX program = lualatex
+
+% LaTeX macros should be (re)defined here
+
+\providecommand{\enquote}[1]{{``\emph{#1}''}\xspace}
+\providecommand{\strong}[1]{{\textbf{#1}}\xspace}
+\let\enquoteORIG=\enquote
+\renewcommand*{\enquote}[1]{\enquoteORIG{#1\unspace}\xspace}
+\providecommand{\textlatin} [2][]{{#2}}
+\providecommand{\textfrench}[2][]{{#2}}
+\providecommand{\textgerman}[2][]{{#2}}
+%\renewcommand{\sfdefault}{lmss}
+\newcommand{\Latin}[1]{\textlatin{\Latinfont{#1}}\xspace}
+\newcommand{\French}[1]{\textfrench{\Frenchfont{#1}}\xspace}
+\newcommand{\English}[1]{{#1}\xspace}
+\let\Anglais=\English
+\newcommand{\German}[1]{\textgerman{\Germanfont{#1}}\xspace}
+\let\Allemand=\German
+
+% defines one's email (optional)
+% usage: \email{<email adress>}
+\newcommand*{\email}[1]{\def\@email{#1}}
+% makes an email hyperlink
+% usage: \emaillink[optional text]{link}
+%\DeclareUrlCommand\Email{\urlstyle{tt}}
+\newcommand*{\emaillink}[2][]{%
+  {\ifthenelse{\equal{#1}{}}%
+  {\href{mailto:#2}{#2}}%
+  {\href{mailto:#2}{#1}}}}
+
+
+\newcommand{\BibAuthor}[3]{{\expandafter\ifx#1\@empty\relax{{#2}\;{#3}}\else\csname#1\endcsname{{#2}\;{#3}}\fi}\xspace}
+
+%\providecommand{\eg}{\mbox{e.g.}\xspace}
+%\providecommand{\ie}{\mbox{i.e.}\xspace}
+\providecommand{\etal}{\mbox{\Latin{et al.}}\xspace}
+%\providecommand{\etal}{{\textsf{et al.}}\xspace}
+%\providecommand{\apriori}{\Latin{a priori}\xspace}
+%\providecommand{\aposteriori}{\Latin{a posteriori}\xspace}
+%\providecommand{\wloss}{without loss of generality}
+%\providecommand{\wrt}{with respect to}
+%\providecommand{\PhD}{{\Latin{\normalfont Ph.\,D.}}\xspace}
+\providecommand{\ellip}{\dots\xspace}
+
+%% MATH **
+\sisetup{input-decimal-markers=.,exponent-product=\cdot,tight-spacing = true,per-mode = symbol}
+\DeclareSIUnit\year{year}
+\DeclareSIUnit\years{years}
+\DeclareSIUnit\day{day}
+\DeclareSIUnit\days{days}
+\DeclareSIUnit\hour{h}
+\DeclareSIUnit\hETD{hETD}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%TODO: add tooltip support
+\newcommand{\AbbrFr}[2]{\French{#2}}
+\newcommand{\AbbrEn}[2]{#2}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Nomenclature
+%\let\NoUnit=\@empty
+%% New column, define the width as #1, the m-column will align all
+%% content in ther vertical middle, \centering will align it in the
+%% horizontal middle.
+\newcolumntype{C}[1]{%
+  >{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}

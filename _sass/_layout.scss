@@ -1,0 +1,71 @@
+
+@import "common";
+
+.content, .chapter, .section{
+
+  @include make-container();
+
+  overflow-wrap: break-word;
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphens: auto;
+  font-size: $font-size-base*$font-size-sc;
+  @include media-breakpoint-up(sm) {
+    font-size: $font-size-base;
+  }
+  h1, .h1 {
+    font-size: $h1-font-size*$font-size-sc;
+    @include media-breakpoint-up(sm) {font-size: $h1-font-size; }
+  }
+  h2, .h2 {
+    font-size: $h2-font-size*$font-size-sc;
+    @include media-breakpoint-up(sm) {font-size: $h2-font-size; }
+   }
+  h3, .h3 {
+    font-size: $h3-font-size*$font-size-sc;
+    @include media-breakpoint-up(sm) {font-size: $h3-font-size; }
+   }
+  h4, .h4 {
+    font-size: $h4-font-size*$font-size-sc;
+    @include media-breakpoint-up(sm) {font-size: $h4-font-size; }
+  }
+  h5, .h5 {
+    font-size: $h5-font-size*$font-size-sc;
+    @include media-breakpoint-up(sm) {font-size: $h5-font-size; }
+  }
+  h6, .h6 {
+    font-size: $h6-font-size*$font-size-sc;
+    @include media-breakpoint-up(sm) {font-size: $h6-font-size; }
+  }
+
+  // Hack the sticky header
+  > h2[id],
+  > h3[id],
+  > h4[id] {
+    pointer-events: none;
+
+    > div,
+    > a {
+      pointer-events: auto;
+    }
+
+    &::before {
+      display: block;
+      height: 6rem;
+      margin-top: -6rem;
+      visibility: hidden;
+      content: "";
+    }
+  }
+
+
+  a {
+    word-wrap: break-word;
+    white-space: pre-line;
+    word-break: break-all;
+    @include media-breakpoint-up(sm) {
+      word-break: break-word;
+    }
+  }
+}

@@ -1,0 +1,346 @@
+// section heading
+h1, h2, h3, h4, h5, h6 {
+  font-family: $font-family-sans-serif;
+}
+
+h1, h2, h4 {
+  color: $BlueDark;
+}
+
+h1 {
+  page-break-before: always;
+  margin: $spacer auto;
+  padding-top: $spacer;
+  line-height: 2rem;
+  font-variant: small-caps;
+  border-bottom: 2pt solid $BlueDark;
+  text-align: right;
+  font-weight: 900;
+}
+
+h2:not(:first-child) {
+  margin-top: $spacer / 2;
+}
+
+h2 {
+  font-weight: 800;
+}
+
+h3 {
+  margin-top: $spacer / 3;
+  color: #2E74B5;
+  font-weight: 600;
+}
+
+h4 {
+  margin-top: $spacer / 4;
+  font-weight: 400;
+}
+
+//
+p, figcaption, blockquote,
+.figure-title,.example-title, .equation-title, .sidebar-title{
+  orphans: 2;
+  widows: 2;
+  text-align: justify;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+br.SkipAndBreak {
+  page-break-before: always;
+  margin-bottom: 1rem;
+}
+
+img, .mediaobject {
+  padding: 0;
+  @include img-fluid;
+  max-width: 100%!important;
+  height: auto;
+  text-align: center;
+  margin: 0 auto;
+}
+svg { font-family: $font-family-sans-serif; }
+
+figure, .figure, .figure p,
+table, .table,
+.figure-contents {
+  justify-content: center;
+  max-width:100%!important;
+  margin: 0 auto!important;
+  text-align: center !important;
+}
+
+figure, .figure, .table {
+  display: block;
+  padding: 0;
+  //border: thin rgba($BlueDark, 0.2) solid;
+  @include border-radius($thumbnail-border-radius);
+  @include box-shadow($thumbnail-box-shadow);
+  margin-bottom: $spacer/2;
+}
+
+figure img, .figure img, .figure-contents img {
+  display: inline-block;
+}
+
+figcaption, caption,
+.figure-title,.example-title, .equation-title, .sidebar-title{
+  text-align: justify;
+  margin: auto 1em;
+  font-size: 0.98rem;
+  font-weight: normal;
+}
+
+table {
+  width: 99%;
+}
+
+table caption, .table-title{
+  display: table-caption;
+  caption-side: top;
+}
+
+table tr {
+  padding: 0;
+  margin: 0;
+  background-color: #f0f0f0;
+}
+
+table tr.even {
+  background-color: #fafafa;
+}
+
+table td {
+  margin: 0;
+  padding: 3px 5px;
+}
+
+> ul li,
+> ol li {
+  margin-bottom: .25rem;
+}
+
+li, dt, dd {
+  text-align: justify !important;
+}
+
+li p, dd p{
+  margin:0; padding:0;
+  //display: inline-block;
+}
+
+dl {
+  max-width: 100%;
+  padding: auto ($spacer / 2);
+
+  @include make-row;
+
+  justify-content: flex-start !important;
+}
+
+dt, dd {
+  @include make-col-ready;
+}
+
+dt {
+  @include media-breakpoint-up(sm) {
+    @include make-col(2);
+  }
+}
+
+dd {
+  @include media-breakpoint-up(sm) {
+    @include make-col(10);
+  }
+}
+
+u, .underline, .uline{
+  text-decoration: underline;
+}
+strong, .strong{
+  font-weight: bolder;
+}
+/* */
+em, em em em, em em em em em {
+  font-style: italic;
+}
+
+em em, em em em em {
+  font-style: normal;
+}
+
+abbr {
+  font-size: 0.9em;
+}
+
+::selection {
+  background-color: $Light;
+}
+
+/* */
+
+.foreignphrase,
+:lang(fr), .french,
+:lang(de), .german,
+:lang(la), .latin
+.unit, .number {
+  color: $Dark;
+}
+
+.unit, .number {
+  font-family: serif;
+  font-size: 98.6%;
+}
+
+.foreignphrase,
+:lang(fr), .french,
+:lang(de), .german {
+  font-weight: 300;
+  //font-style: oblique;
+  font-family:  "CMU Serif","Computer Modern", "Times New Roman",serif;
+}
+
+:lang(de), .french {quotes:'\201E' '\201C' '\201A' '\2018';}
+:lang(fr), .german {quotes:'\ab\2005' '\2005\bb' '\2039\2005' '\2005\203a';}
+
+:lang(la), .latin {
+  font-size: 99%;
+  font-weight: 250;
+  font-style: oblique;
+}
+
+.unit, .number {
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+}
+
+.number + .unit {
+  padding-left: .4em;
+}
+
+.footnote-ref {
+  font-size: $font-size-footnote;
+
+  //vertical-align:top;
+  vertical-align: super;
+}
+
+.footnotes {
+  @include make-container;
+  font-size: $font-size-footnote;
+  line-height: 1.125rem;
+
+  hr,.footnote-hr {
+    border-top: 2px solid $Dark;
+  }
+
+  ol li {
+    margin: 0.5rem auto;
+  }
+
+  p {
+    margin: 0;
+    padding: 0;
+    text-align: left;
+  }
+}
+
+.citation {
+  margin: 0;
+  padding: 0;
+  background-color: rgba($CyanDark, 0.1);
+  &:hover{background-color: rgba($accent, 0.4);}
+  & + & {
+    margin-left: -0.25rem;
+  }
+}
+
+.references {
+  font-size: $font-size-small;
+
+  @include media-breakpoint-up(sm) {
+    font-size: $font-size-base;
+  }
+}
+
+.bib, #refs {
+  margin-left: 2em;
+}
+
+.bib ol {
+  list-style-type: none;
+  position: relative;
+  margin: 0;
+}
+
+.bib li p {
+  display: inline;
+  width: 90%;
+  text-align: justify;
+}
+
+.bib li {
+  counter-increment: section;
+  padding: 4px;
+}
+
+.bib ol > li:before {
+  text-align: right;
+  font-family: Calibri,Verdana,Helvetica,Arial,sans-serif;
+  font-size: 110%;
+  font-weight: 900;
+  color: var(--primary);
+  position: absolute;
+  left: -1.01em;
+  padding-top: 2px;
+}
+
+#refs {
+  font-size: $font-size-small;
+  line-height: 1.125rem;
+
+  &, p {
+    margin: ($spacer / 4) auto;
+    width: 99%;
+  }
+
+  div:active, div:focus, div:focus-within {
+    background-color: $Light;
+  }
+
+  strong {
+    color: $BlueDark;
+  }
+
+  em {}
+}
+
+#ACL li:before {
+  content: "[ACL" counter(section, decimal) "] ";
+}
+
+#ACLN li:before {
+  content: "[ACLN" counter(section, decimal) "] ";
+}
+
+#DO li:before {
+  content: "[DO" counter(section, decimal) "] ";
+}
+
+#OS li:before {
+  content: "[OS" counter(section, decimal) "] ";
+}
+
+#ACT li:before {
+  content: "[ACT" counter(section, decimal) "] ";
+}
+
+#INV li:before {
+  content: "[INV" counter(section, decimal) "] ";
+}
+
+#COM li:before {
+  content: "[COM" counter(section, decimal) "] ";
+}

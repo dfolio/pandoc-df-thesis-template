@@ -1,0 +1,888 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{pandoc-thesis}[2018/10/10 \space v0.5\space Dfolio's pandoc-thesis package style]
+
+\newdimen\ThesisZ \ThesisZ=0pt
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\Thesisinfo#1{\ifverbose\GenericInfo{Thesis}{#1}\fi}
+\def\Thesiswarning#1{\PackageWarning{Thesis}{#1}}
+\def\IfDraft#1{\ifdraft#1\fi}
+\def\IfFinal#1{\ifdraft\relax\else{#1}\fi}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Additional package
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\RequirePackage{a4wide}
+\RequirePackage{relsize}
+\RequirePackage{xspace,calc}
+
+\RequirePackage{caption}
+\RequirePackage{subfloat}
+\RequirePackage{framed}
+\RequirePackage{siunitx}%,per-symbol=\text{~div~}
+\RequirePackage{fancybox}
+%\RequirePackage{pdfpages}
+\RequirePackage{pdfcomment}
+\RequirePackage{multicol}\columnseprule=0.5pt
+\RequirePackage{multirow}
+\RequirePackage{array}
+\RequirePackage{tabularx}
+
+\RequirePackage{ragged2e}
+\RequirePackage{tikz}
+
+\RequirePackage{siunitx}
+\RequirePackage{marvosym}
+%\RequirePackage{fontawesome}
+%\newcommand*{\marvosymbol}[1]{{\fontfamily{mvs}\fontencoding{U}\fontseries{m}\fontshape{n}\selectfont\char#1}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\PassOptionsToPackage{hyphens}{url}        % url is loaded by hyperref
+\RequirePackage[normalem]{ulem}             % for uline to underline text
+% avoid problems with \sout in headers with hyperref:
+\pdfstringdefDisableCommands{\renewcommand{\sout}{}}
+
+%\renewcommand*{\sectionautorefname}{Section}
+%\let\subsectionautorefname\sectionautorefname
+%\let\subsubsectionautorefname\sectionautorefname
+\RequirePackage[nameinlink]{cleveref}
+\crefname{equation}{Eq.}{Eqs.}%
+\crefname{figure}{figure}{figures.}%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% DRAFT
+\newcommand\draftHrule{\relax}
+\newcommand{\Thesisdraftoverlay}[1]{\relax}
+\IfDraft{
+  \geometry{showframe}
+  \setlength\overfullrule{2pt}
+  \showboxdepth=\maxdimen
+  \showboxbreadth=\maxdimen
+  \renewcommand*{\draftHrule}{{\color{gray2}\hrule height\overfullrule depth\ThesisZ}}
+  \renewcommand*{\Thesisdraftoverlay}[1]{\ifdraft\tikz[remember picture,overlay]{\node[rotate=60,scale=10,color=yellow,text opacity=0.2] at (current page.center) {#1};}\fi}
+  % Geometry Show Frame
+  \def\Gm@hrule{\color{yellow!33}\hrule height1pt depth\ThesisZ width\textwidth}%
+  \def\Gm@vrule{\color{yellow!50}\vrule width0.1pt height\textheight depth\ThesisZ}%
+  \def\Gm@hruled{\color{yellow!25}\hrule height\ThesisZ depth1pt width\textwidth}%
+  %
+  \Thesiswarning{\jobname compiled using draft mode. Not for final release!}
+}
+\IfFinal{
+  \setlength\overfullrule{0pt}
+}
+
+\newcommand{\reviewtimetoday}[2]{\special{!userdict begin
+    /bop-hook{gsave 20 710 translate 45 rotate 0.8 setgray
+      /Times-Roman findfont 12 scalefont setfont 0 0   moveto (#1) show
+      0 -12 moveto (#2) show grestore}def end}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% HEAD/FOOT
+\RequirePackage{fancyhdr}
+%\marginpar=\ThesisZ
+\fancypagestyle{plain}{%
+  \fancyhf{} % clear all header and footer fields
+  \fancyfoot[C]{{\footfont\thepage}} % except the center
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{1pt}
+}
+
+\fancypagestyle{front}{%
+  \fancyhf{}%
+  \fancyfoot[C]{{\footfont\thepage}} % on center
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\footrulewidth}{0.5pt}%
+}
+
+\let\Thesisfootmain\@empty
+\newcommand{\SetThesisfootmain}[1]{\gdef\Thesisfootmain{#1}\typeout{Thesisfootmain : #1}}
+
+\fancypagestyle{main}{%
+  \fancyhf{}%
+  \fancyhead[LE,RO]{{\headfont\thepage}}%
+  \fancyhead[LO]{{\headfont\nouppercase{\rightmark}}}%
+  \fancyhead[RE]{{\headfont\nouppercase{\leftmark}}}%
+  \IfDraft{\fancyhead[CO,CE]{{\color{blue2!75!gray2!50}---Draft---}}}
+  \fancyfoot[LE,RO]{{\footfont{\textcolor{blue2!75!gray2!66}{\expandafter\Thesisfootmain\xspace {{ }\Thesisfootmaindraft}}}}} % except the center
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\footrulewidth}{0.5pt}%
+}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Penalty %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\pretolerance=100
+%\tolerance=200 % INITEX sets this to 10000
+%\hbadness=1000
+%\vbadness=1000
+%\linepenalty=10              %the penalty added to the badness of each line within a paragraph
+%\hyphenpenalty=50            %the penalty for line breaking at an automatically inserted hyphen
+%\exhyphenpenalty=50          %the penalty for line breaking at an explicit hyphen
+\binoppenalty=10000         %the penalty for breaking a line at a binary operator
+\relpenalty=10000           %the penalty for breaking a line at a relation
+%\clubpenalty=150             %extra penalty for breaking after first line of a paragraph
+%\widowpenalty=150            %extra penalty for breaking before last line of a paragraph
+%\displaywidowpenalty=50      %extra penalty for breaking before last line before a display math
+%\brokenpenalty=100           %extra penalty for page breaking after a hyphenated line
+%\predisplaypenalty=10000     %penalty for breaking before a display
+%\doublehyphendemerits=10000  %Additional demerit added to the paragraph for each pair of consecutive lines ending in a discretionary (typically a hyphen).
+%\finalhyphendemerits=5000    %Additional demerit added if the penultimate line ends with a discretionary.
+%\floatingpenalty = 20000     %penalty for splitting an insertion
+\@secpenalty=-1000              %put before a sectional title (v)
+\newcount\Thesislineskippenalty
+\Thesislineskippenalty=500
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Skip
+\abovedisplayskip=12pt plus 3pt minus 9pt
+\abovedisplayshortskip=0pt plus 3pt
+\belowdisplayskip=12pt plus 3pt minus 9pt
+\belowdisplayshortskip=7pt plus 3pt minus 4pt
+%
+\topskip=1em
+\splittopskip=1em
+\parfillskip=0pt plus 1fil
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+%\setlength{\parskip}{.5\baselineskip}
+\setlength{\medskipamount}{.75\baselineskip}
+\setlength{\bigskipamount}{1.5\baselineskip}
+
+\newskip\skipfillamount           \skipfillamount           = 1em plus1fill
+\newskip\sectionskipamount        \sectionskipamount        =-3.0em plus-1.50em minus-1.50em
+\newskip\subsectionskipamount     \subsectionskipamount     =-2.5em plus-1.25em minus-1.25em
+\newskip\subsubsectionskipamount  \subsubsectionskipamount  =-1.5em plus-1.00ex minus-1.00ex
+\newskip\paragraphskipamount      \paragraphskipamount      =-1.5ex plus-0.75ex minus -.1ex
+\newskip\subparagraphskipamount   \subparagraphskipamount   = 3.5ex plus 1.75ex minus  .2ex
+
+\def\Thesisskip{\vspace\skipfillamount}
+\newcommand{\ThesisSkipAndBreak}[1][1]{%
+  \ifdim #1pt> 2pt
+    \vspace{\skipfillamount}%
+    \ifvmode
+      \penalty\@highpenalty%
+    \fi
+  \else
+    \ifdim\lastskip<#1\medskipamount\removelastskip\fi
+    \ifvmode
+       \penalty\@secpenalty%
+    \else
+      \@bsphack
+      \vadjust{\penalty\@secpenalty}%
+      \@esphack
+    \fi
+    \sloppy\clubpenalty5000\widowpenalty5000
+    \vspace{#1\medskipamount}%
+  \fi
+  \raggedbottom%
+}
+\newcommand{\SkipAndBreak}[1]{\ThesisSkipAndBreak[#1]}
+
+\newskip\lineskipamount    \lineskipamount    =.51em plus.51em minus.5em
+\newcommand{\ThesisLineskipAndBreak}[1][1]{%%
+  \tolerance9999%
+  \hfuzz .5\p@
+  \ifvmode
+    \@nolnerr
+  \else
+    \@tempskipa\lastskip
+    \unskip
+    \penalty\Thesislineskippenalty%
+    \ifdim\@tempskipa>#1\lineskipamount
+      \hskip\@tempskipa
+      \ignorespaces
+    \else
+      \hskip#1\lineskipamount\relax
+      \ignorespaces
+    \fi
+  \fi\penalty500
+}
+\newcommand{\LineskipAndBreak}[1]{\ThesisLineskipAndBreak[#1]}
+
+%
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+%\def\cleardoublepage{\clearpage\if@twoside \ifodd\c@page\else
+%    \hbox{}\newpage\if@twocolumn\hbox{}\newpage\fi\fi\fi}
+
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+% Add blank page to get odd page
+\newcommand{\clearemptydoublepage}{%\markboth{}{}\thispagestyle{empty}%
+  \ifthenelse{\isodd{\value{page}}}{\newpage\markboth{}{}\pagestyle{empty}}{}
+  \markboth{}{}\cleardoublepage
+  \if@mainmatter
+    \pagestyle{main}
+  \else
+    \pagestyle{front}
+  \fi}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Main/Front/Back-matter  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\renewcommand*\mainmatter{%
+  \Thesisinfo{************************* START MAINMATTER *************************}
+  \clearemptydoublepage
+  \@mainmattertrue
+  \pagenumbering{arabic}
+  \raggedbottom  % is not the default for twoside
+}
+
+\newcommand{\Appendix}{
+  \Thesisinfo{************************* START Appendix ***************************}
+  \clearemptydoublepage
+  %\gdef\theHchapter{\Hy@AlphNoErr{chapter}}
+  \providecommand*{\appendixname}{Appendix}
+  \providecommand*{\appendixtocname}{Appendices}
+  \providecommand*{\appendixpagename}{Appendices}
+  \renewcommand*{\chaptername}{\appendixname}
+  \renewcommand*{\chapternameshort}{App.}
+  \addtocontents{toc}{\protect\setcounter{tocdepth}{1}}
+  \renewcommand*{\chapterautorefname}{\appendixname}
+  \newcommand*{\Appendixautorefname}{\appendixname}
+  \newcommand*{\Appendicesautorefname}{\appendixtocname}
+  % ----------------------------------------------------------------------------
+  \renewcommand\@chapapp{\chapternameshort}%
+  \renewcommand\thechapter{{\rmfamily\bfseries\@Alph\c@chapter}}%
+  % ----------------------------------------------------------------------------
+  \appendix
+  % ----------------------------------------------------------------------------
+  %\appendixpage ---------------------------------------------------------------
+  \clearemptydoublepage
+  \thispagestyle{empty}%
+  \global\@topnum\ThesisZ
+  \null\vfil
+  \markboth{}{}%
+  {\centering
+    \interlinepenalty \@M
+    \hrule height4pt {}         \par\vskip1.5cm
+    \partfont\appendixpagename\par\vskip1.5cm
+    \hrule height4pt{}          \par\vskip1cm
+  }%
+  \phantomsection
+  %\addappheadtotoc
+  \addtocontents{toc}{\protect\contentsline{part}{\appendixtocname}{}{\@currentHref}}
+  \vfil\clearemptydoublepage
+  \pagestyle{main}
+  % End appendixpage -----------------------------------------------------------
+}
+\let\Appendices\Appendix
+
+\let\BOOKbackmatter\backmatter
+\def\backmatter{
+  \Thesisinfo{************************* START BACKMATTER *************************}
+\parindent=0pt
+\parskip=.9\parskip
+\baselineskip=.9\baselineskip
+\sectionskipamount=-4ex  plus -2ex  minus -.5ex
+\BOOKbackmatter
+}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Chapter Styling %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\RequirePackage{fncychap}
+%\renewcommand\thechapter{\@Roman\c@chapter}
+\renewcommand\thechapter{{\normalfont\rmfamily\bfseries\@Roman\c@chapter}}%
+
+\renewcommand*{\chaptermark}[1]{%
+  \markboth{\penalty\ThesisZ%
+    \ifnum \c@secnumdepth >\m@ne%
+      \if@mainmatter
+        \chapternameshort\;\thechapter. \ %
+      \fi%
+    \fi%
+    #1}{}%
+}
+
+\renewcommand*\sectionmark[1]{%
+  \markright {\penalty\ThesisZ%
+    \ifnum \c@secnumdepth >\z@
+      \thesection. \ %
+    \fi
+    #1}}
+%
+\providecommand{\chapternameshort}{Chap.}
+%
+\let\BOOKchapter\chapter
+\renewcommand*\chapter{\@ifstar{\Thesisstarchapter}{\@dblarg\Thesisnostarchapter}}
+
+\newcommand*\Thesisstarchapter[1]{%
+  \clearemptydoublepage%
+  \thispagestyle{plain}%
+  \BOOKchapter*{#1}
+  \chaptermark{#1}
+}
+\def\Thesisnostarchapter[#1]#2{%
+  \clearemptydoublepage%
+  \thispagestyle{plain}%
+  \global\@topnum\ThesisZ
+  \renewcommand\@chapapp{\chaptername}
+  \BOOKchapter[#1]{#2}
+  \renewcommand\@chapapp{\chapternameshort}
+  \chaptermark{#2}
+}
+
+% %From Glenn chapter style of fncychap
+\renewcommand{\DOCH}{%
+  \settoheight{\myhi}{\CTV\FmTi{Test}}
+  \setlength{\py}{\baselineskip}
+  \addtolength{\py}{\RW}
+  \addtolength{\py}{\myhi}
+  \setlength{\pyy}{\py}
+  \addtolength{\pyy}{-1\RW}
+  \raggedright
+  \CNV\FmN{\@chapapp}\space\CNoV\thechapter
+  \hskip 3pt\color{chapterrule}\mghrulefill{\RW}\rule[-1\pyy]{2\RW}{\py}\par\nobreak%  \vskip 20\p@
+}
+
+\renewcommand{\DOTI}[1]{%
+  \addtolength{\pyy}{-4pt}
+  \settoheight{\myhi}{\CTV\FmTi{#1}}
+  \addtolength{\myhi}{\py}
+  \addtolength{\myhi}{-1\RW}
+  \vskip -1\pyy
+  {\color{chapterrule}\rule{2\RW}{\myhi}\mghrulefill{\RW}}\hskip 2pt
+  \raggedleft\CTV\FmTi{#1}\par\nobreak}
+\def\@makechapterhead#1{
+  \vspace*{-0.5\sectionskipamount}
+  {\parindent\ThesisZ
+    \raggedright
+    \normalfont
+    \ifnum \c@secnumdepth >\m@ne
+    \if@mainmatter%%%%% Fix for frontmatter, mainmatter, and backmatter 040920
+    \DOCH
+    \fi
+    \fi
+    \interlinepenalty\@M
+    \if@mainmatter%%%%% Fix for frontmatter, mainmatter, and backmatter 060424
+      \DOTI{#1}%
+    \else%
+      \DOTIS{#1}%
+    \fi
+    \vskip-1.5\sectionskipamount
+}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Section Heading Styling %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \@startsection {NAME}{LEVEL}{INDENT}{BEFORESKIP}{AFTERSKIP}{STYLE}
+%            optional * [ALTHEADING]{HEADING}
+%    Generic command to start a section.
+%    NAME       : e.g., 'subsection'.p
+%    LEVEL      : a number, denoting depth of section -- e.g., chapter=1,
+%                 section = 2, etc.  A section number will be printed if
+%                 and only if LEVEL < or = the value of the secnumdepth
+%                 counter.
+%    INDENT     : Indentation of heading from left margin
+%    BEFORESKIP : Absolute value = skip to leave above the heading.
+%                 If negative, then paragraph indent of text following
+%                 heading is suppressed.
+%    AFTERSKIP  : if positive, then skip to leave below heading,
+%                       else - skip to leave to right of run-in heading.
+%    STYLE      : commands to set style
+%  If '*' missing, then increments the counter.  If it is present, then
+%  there should be no [ALTHEADING] argument.  A sectioning command
+%  is normally defined to \@startsection + its first six arguments.
+\renewcommand\section{\@startsection {section}{1}{-1em}%
+  {\sectionskipamount}%
+  {2.25ex  plus.2ex}%
+  {\sectionfont\color{section}}}
+\renewcommand\subsection{\@startsection{subsection}{2}{\ThesisZ}%
+  {\subsectionskipamount}%
+  {1.5ex  plus .2ex}%
+  {\subsectionfont\color{subsection}}}
+\renewcommand\subsubsection{\@startsection{subsubsection}{3}{1ex}%
+  {\subsubsectionskipamount}%
+  {.5ex  plus .1ex}%
+  {\subsubsectionfont\color{subsubsection}}}
+\renewcommand\paragraph{\@startsection{paragraph}{4}{0.5\parindent}%
+  {\paragraphskipamount}%
+  {0.25ex}%
+  {\paragraphfont\color{paragraph}}}
+\renewcommand\subparagraph{\@startsection{subparagraph}{5}{\parindent}%
+  {\subparagraphskipamount}%
+  {-1em}%
+  {\subparagraphfont}}
+
+\renewcommand\theparagraph{}%\Roman{paragraph})}
+\renewcommand\thesubparagraph{}%\alph{subparagraph})}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Special sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\Introduction}[1][Introduction]{\phantomsection%
+  \section*{#1}\sectionmark{#1}\thispagestyle{plain}}
+
+% TOC sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\providecommand{\contentsname}{Contents}
+\renewcommand*\tableofcontents{
+  \global\@topnum\ThesisZ
+  \phantomsection
+  \chapter*{\chapterfont\contentsname}%
+  \addcontentsline{toc}{chapter}{\contentsname}
+  \chaptermark{\contentsname}
+  \fancyhead[LE,RO]{{\contentsname}}%\headfont
+  \@starttoc{toc}%
+}
+
+% LOF sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\setcounter{lofdepth}{2}
+ \providecommand{\listfigurename}{List of Figures}
+\renewcommand*\listoffigures{
+  \global\@topnum\ThesisZ
+  \phantomsection
+  \chapter*{\listfigurename}%
+  \addcontentsline{toc}{chapter}{\listfigurename}
+  \chaptermark{\listfigurename}
+  \fancyhead[LE,RO]{{\headfont\listfigurename}}%
+  \@starttoc{lof}%
+}
+% LOT sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\providecommand{\listtablename}{List of Tables}
+\renewcommand\listoftables{
+  \global\@topnum\ThesisZ
+  \phantomsection
+  \chapter*{\listtablename}%
+  \addcontentsline{toc}{chapter}{\listtablename}
+  \chaptermark{\listtablename}
+  \fancyhead[LE,RO]{{\headfont\listtablename}}%
+  \@starttoc{lot}%
+}
+
+% ------------------------------------------------------------------------------
+% Contents styling
+\let\BOOKl@part\l@part
+\renewcommand*\l@part[2]{
+  \ThesisSkipAndBreak[2]
+  \BOOKl@part{\lpartfont#1}{\lpartfont#2}}
+
+\let\BOOKl@chapter\l@chapter
+\renewcommand*\l@chapter[2]{\BOOKl@chapter{\lchapterfont#1}{\lchapterfont#2}}
+
+\renewcommand\@dotsep{2.5}
+\renewcommand*\l@section[2]{\@dottedtocline{1}{0.75em}{2em}{\lsectionfont#1}{\lsectionfont#2}}
+\renewcommand*\l@subsection[2]{\@dottedtocline{2}{2.em}{3em}{\lsubsectionfont#1}{\lsubsectionfont#2}}
+\renewcommand*\l@subsubsection[2]{\@dottedtocline{3}{3em}{3.5em}{\lsubsubsectionfont#1}{\lsubsubsectionfont#2}}
+%\renewcommand*\l@paragraph[2]{\@dottedtocline{4}{5em}{5em}{\lparagraphfont#1}{\lparagraphfont#2}}
+%\renewcommand*\l@subparagraph[2]{\@dottedtocline{5}{12em}{6em}{\lsubparagraphfont#1}{\lsubparagraphfont#2}}
+
+\renewcommand*\l@figure[2]{\@dottedtocline{1}{1em}{2em}{\lsubsectionfont#1}{\lsubsectionfont#2}}
+\renewcommand*\l@table[2]{\@dottedtocline{1}{1em}{2em}{\lsubsectionfont#1}{\lsubsectionfont#2}}
+%
+% BIB sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\renewcommand*\newblock{\hskip .51em  plus.25em  minus.5em\penalty\ThesisZ}%
+\let\BOOKcite\cite
+\def\cite{\xspace\BOOKcite}
+
+\providecommand{\natexlab}[1]{#1}
+\setlength{\bibindent}{\ThesisZ}
+\ifx\NAT@numbers\@undefined\else\setlength{\bibhang}{\z@}\fi
+\def\@biblabel#1{[\textcolor{citecolor}{\sffamily#1}]} %add color
+
+\providecommand{\bibpreamble}{\relax}
+\providecommand{\bibpostamble}{\relax}
+\providecommand{\bibcleanup}{\@empty}
+\providecommand{\@bibsetup}[1]{\@empty}
+\providecommand{\bibitem@fin}[1]{\@empty}
+\ifx\defbibenvironment\@undefined
+%we are not using biblatex
+\newenvironment{Mybibliography}[1]{%
+  \parindent\ThesisZ
+  \bibpreamble
+  \list{\@biblabel{Thesis\@arabic\c@enumiv}}%
+  { %\smaller
+   \@openbib@code
+   \@bibsetup{#1}%
+   \usecounter{enumiv}}%
+    \sloppy
+    \clubpenalty4000  \@clubpenalty \clubpenalty
+    \widowpenalty4000
+    \sfcode`\.=1000\relax
+}{%
+  \bibitem@fin
+  \def\@noitemerr{\Thesiswarning{Empty `Mybibliography' environment}}%
+  \bibpostamble
+  \endlist
+  \bibcleanup
+}
+\else%
+\newenvironment{Mybibliography}[1]
+{\parindent\ThesisZ
+  \bibpreamble
+  \list{\@biblabel{Thesis\@arabic\c@enumiv}}%
+  {%
+    \@bibsetup{#1}%
+    \usecounter{enumiv}
+  }%
+  \sloppy
+  \clubpenalty4000  \@clubpenalty \clubpenalty
+  \widowpenalty4000
+  \sfcode`\.=1000\relax
+}{%\bibitem@fin
+  \def\@noitemerr{\Thesiswarning{Empty `Mybibliography' environment}}%
+  \endlist
+  \bibcleanup
+}
+\defbibenvironment{bibliography}
+  {%\def\bibfont{\smaller}
+  \list
+     {\printtext[labelnumberwidth]{%
+        \printfield{labelprefix}%
+        \printfield{labelnumber}}}
+     {\setlength{\labelwidth}{\labelnumberwidth}%
+      \setlength{\leftmargin}{\labelwidth}%
+      \setlength{\labelsep}{\biblabelsep}%
+      \addtolength{\leftmargin}{\labelsep}%
+      \setlength{\itemsep}{\bibitemsep}%
+      \setlength{\parsep}{\bibparsep}}%
+      \renewcommand*{\makelabel}[1]{\hss##1}
+  \smaller%
+  \sloppy\clubpenalty4000
+  \@clubpenalty\clubpenalty
+  \widowpenalty4000%
+  \sfcode`\.\@m%
+  }
+  {\endlist}
+  {\item}
+
+\renewcommand*\newblockpunct{\hskip.51em  plus.25em  minus.5em\penalty\ThesisZ\relax\space}%
+
+\fi
+
+\renewenvironment{thebibliography}[1]
+{\phantomsection
+  \chapter*{\bibname}%
+  \addcontentsline{toc}{chapter}{\bibname}
+  %\@mkboth{\headfont\bibname}{\headfont\bibname}%
+  %\let\bibnumfmt\@empty
+  \parindent\z@
+  \bibpreamble
+  \bibfont
+  \list{\@biblabel{\@arabic{NAT@ctr}}}%
+  {%
+    \@openbib@code
+    \@bibsetup{#1}%
+    \usecounter{NAT@ctr}}% %% only changed here to usecounter
+  \sloppy\clubpenalty4000
+  \@clubpenalty\clubpenalty
+  \widowpenalty4000%
+  \sfcode`\.\@m%
+}{%
+  \bibitem@fin
+  \bibpostamble
+  \def\@noitemerr{\Thesiswarning{Empty `thebibliography' environment}}%
+  \endlist
+  \bibcleanup}
+% GLO sections %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\providecommand*{\Thesisindexlistname}{Index of terms and notations}
+\providecommand*{\Thesisacronymname}{List of Acronyms}
+\providecommand*{\Thesisglossaryname}{List of Terms}
+\providecommand*{\Thesissymbolslistname}{List of symbols}
+
+\providecommand*{\indexlistname}{\translate{\Thesisindexlistname}}
+\renewcommand*{\acronymname}{\translate{\Thesisacronymname}}
+\renewcommand*{\glossaryname}{\translate{\Thesisglossaryname}}
+\providecommand*{\symbolslistname}{\translate{\Thesissymbolslistname}}
+
+\renewcommand*{\glsautoprefix}{sec:glos-}
+
+%\newglossary[alg]{acronym}{acr}{acn}{\acronymname}%
+%\renewcommand*{\acronymtype}{acronym}%
+
+\setglossarystyle{longheaderborder}
+\setlength{\glsdescwidth}{.75\linewidth-1em}
+
+%Generate a list of symboles
+\newglossary[slg]{symbolslist}{syi}{syg}{\symbolslistname}
+\renewcommand*{\glspostdescription}{}
+
+\newglossary{glg}{gls}{glo}{\glossaryname}
+
+\def\Thesis@glossaries@preamble{\relax}
+\newcommand{\SetGlossariesPreamble}[1]{\gdef\Thesis@glossaries@preamble{#1}}
+\newcommand{\Glossaries}[1][\@empty]{%
+  \Thesis@glossaries@preamble
+  \clearemptydoublepage
+  \global\@topnum\ThesisZ
+  \phantomsection
+  \stepcounter{chapter}
+  \chapter*{\chapterfont\indexlistname\@mkboth{\indexlistname}{\indexlistname}}%
+  \label{sec:glossary}
+  \addcontentsline{toc}{chapter}{\Thesisindexlistname}
+  \fancyhead[LE,RO]{{\headfont\indexlistname}}%
+  \fancyfoot[C]{\headfont\thepage}%
+  %\fancyfoot[L]{{\headfont\foot@banner}} %
+  %TODO: Nomeclature
+  %\printnoidxglossary[type=nomenclature,style=nomenclature]
+  %Acronym
+  \printnoidxglossary[type=\acronymtype,style=list,title=\acronymname,toctitle=\Thesisacronymname]
+  %Print the glossary
+  \printnoidxglossary[type=glg,style=altlist,title=\glossaryname,toctitle=\Thesisglossaryname]
+}
+
+
+%\renewcommand*{\glossarysection}[2][\@gls@title]{%
+%  \def\@gls@title{#2}%
+%  \phantomsection%
+%  \section*{#2}
+%  \glsglossarymark{\glossarytoctitle}%
+%}
+%TODO:
+%\newglossarystyle{nomenclature}{%
+%  \renewcommand*{\glossaryheader}{%
+%    \hline
+%    \bfseries Notation&\bfseries\descriptionname&
+%    \bfseries Unit\'e\\\hline\endhead
+%    \hline\endfoot}%
+%  \setlength{\glsdescwidth}{.7\linewidth-1em}
+%  \setlength{\glspagelistwidth}{4.5em}
+%  % allow line wrap in the description column
+%  \renewenvironment{theglossary}%
+%  {\begin{longtable}{|l|p{\glsdescwidth}|p{\glspagelistwidth}|}}%
+%    {\end{longtable}}%,xindy
+%  \renewcommand{\glsgroupskip}{}% make nothing happen between groups
+%  % swap second and third columns
+%  \renewcommand*{\glossaryentryfield}[5]{%
+%    \glsentryitem{##1}\glstarget{##1}{##2} & ##3 & ##4\\[0.5ex]\hline}
+%  % sub-entries
+%  \renewcommand*{\glossarysubentryfield}[6]{%
+%    \glssubentryitem{##2}%
+%    \glstarget{##2}{##3} &  ##4 & ##6\\}%
+%
+%}
+%
+%\newcommand{\Nomenclature}[1][\@empty]{%
+%  \clearemptydoublepage%
+%  \chapter*{Glossaires}
+%  \fancyhead[LE]{{\headfont\glossaryname}}%
+%  \fancyhead[RO]{{\headfont\glossaryname}}%
+%  \cfoot{\headfont\thepage}
+%  \ifx#1\@empty\relax\else\input{#1} \fi
+%  %Print list of symbols
+%  \printglossary[type=nomenclature,style=nomenclature]
+%  \pagebreak[3]
+%  %Acronyme
+%  \printglossary[type=\acronymtype,style=list]
+%}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% List/Itemize/Enumerate/Description Styling %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Lists
+\let\tightlist\relax
+\RequirePackage{enumerate,enumitem}
+\SetLabelAlign{parright}{\nobreak\strut\smash{\parbox[t]\labelwidth{\raggedleft#1}}}
+\setlist{nolistsep,noitemsep}
+%\setlist[1]{\labelindent=\parindent} % < Usually a good idea
+\setlist[description]{format={\sffamily\bfseries}}
+\setlist[itemize]{leftmargin=*}
+\setlist[itemize,1]{label={•}}
+\setlist[itemize,2]{label={\bfseries–}}
+% \renewcommand{\labelitemi}{{\bfseries\textbullet}}
+% \renewcommand{\labelitemii}{{\bfseries\textendash}}
+% \renewcommand{\labelitemiii}{\textasteriskcentered}
+
+
+\setlist[description,1]{format={\sffamily\bfseries},align=parright,leftmargin=2.33cm,labelwidth=!,topsep=1.\medskipamount,itemsep=.6\medskipamount}
+\setlist[description,2]{format={\sffamily},labelindent=-1.5cm,align=parright,leftmargin=0.5cm,labelwidth=!}
+
+\newcounter{mainmemorder}
+\newcommand{\SaveOrder}{\setcounter{mainmemorder}{\value{enumi}}}
+\let\SaveOrder\SaveOrderCounter
+\newcommand{\LoadOrder}{\setcounter{enumi}{\value{mainmemorder}}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Figure Styling %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% set default figure placement to tb
+\def\fps@figure{tb}
+
+\captionsetup{format=hang,parskip=\ThesisZ, %indention=2em,
+  font={small,sf},labelfont=bf,textfont={},width={\textwidth-1ex}}
+\newskip\Thesiscaptionaboveamount             \Thesiscaptionaboveamount=1ex plus0.5ex minus0.5ex
+\newskip\Thesiscaptionbelowamount             \Thesiscaptionbelowamount=1em plus1ex minus1ex
+
+\textfloatsep.75\Thesiscaptionbelowamount %distance between floats on the top or the bottom and the text;
+\floatsep.75\Thesiscaptionaboveamount     % distance between two floats;
+\intextsep.5\Thesiscaptionaboveamount    % distance between floats inserted inside the page text (using h) and the text proper.
+
+\captionsetup[figure]{position=bottom,aboveskip=\Thesiscaptionaboveamount,belowskip=\Thesiscaptionbelowamount}
+\captionsetup[table]{position=top,aboveskip=\Thesiscaptionaboveamount,belowskip=\Thesiscaptionbelowamount}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Metadata handling %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\edef\Thesisbackslashchar{\expandafter\@gobble\string\\}
+\providecommand\ThesismetaSep{;}
+
+\let\Thesistitle\@empty
+\let\Thesissubject\@empty
+\let\Thesissubtitle\@empty
+\let\Thesisauthor\@empty
+\let\Thesiskeywords\@empty
+\let\Thesisdate\@empty
+\let\Thesiscopyright\@empty
+
+\providecommand{\subtitle}[1]{}
+\providecommand{\subject}[1]{}
+\providecommand{\institute}[1]{}
+\providecommand{\keywords}[1]{}
+\providecommand{\copyright}[1]{}
+
+\let\BOOKtitle\title
+\renewcommand{\title}[2][\@empty]{
+  \gdef\Thesistitle{#2}
+  \ifx#1\@empty\gdef\pdfx@Title{#2}\else\gdef\pdfx@Title{#1}\fi
+  %\gdef\@title{#2}
+  \BOOKtitle{#2}
+}
+\let\BOOKsubtitle\subtitle
+\renewcommand{\subtitle}[1]{\gdef\Thesissubtitle{#1}\BOOKsubtitle{#1}}
+
+\let\BOOKsubject\subject
+\renewcommand{\subject}[1]{
+  \gdef\Thesissubject{#1}
+  \gdef\pdfx@Subject{#1}
+  \BOOKsubject{#1}
+}
+
+\let\BOOKauthor\author
+\renewcommand{\author}[2][\@empty]{
+  \gdef\Thesisauthor{#2}
+  \ifx#1\@empty\else\gdef\pdfx@Author{#1}\fi
+  \gdef\@author{#2}
+  \BOOKauthor{#2}
+}
+%
+\let\BOOKinstitute\institute
+\renewcommand{\institute}[1]{
+  \gdef\Thesisinstitute{#1}
+  \BOOKinstitute{#1}
+}
+
+\let\BOOKcopyright\copyright
+\renewcommand{\copyright}[1]{
+  \gdef\Thesiscopyright{#1}
+  \BOOKcopyright{#1}
+}
+
+\let\BOOKkeywords\keywords
+\renewcommand{\keywords}[2][\@empty]{
+  \gdef\Thesiskeywords{#2}
+  \ifx#1\@empty\else\gdef\pdfx@Keywords{#1}\fi
+  \gdef\@keywords{#2}
+  \BOOKkeywords{#2}
+}
+
+\let\BOOKdate\date
+\renewcommand{\date}[1]{
+  \gdef\Thesisdate{#1}
+  \gdef\@date{#1}
+  \BOOKdate{#1}}
+
+% titlepage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\renewcommand*\maketitle{%
+\Thesisinfo{************************* START maketitle *************************}
+\begin{titlepage}
+  \parindent\z@
+  \newpage\null
+  \vskip2em plus1fil%
+  \begin{center}%
+    \let\footnote\relax
+    %\let\thanks\relax
+    \sffamily%
+    {\large\bfseries\Thesissubject}           \par\vskip1cm
+    {\bfseries\Large
+      \lineskip .5em%
+      \begin{tabular}[t]{c}%
+        \Thesisauthor
+      \end{tabular}
+    }                       \par\vskip2cm
+    {\large\Thesisdate}        \par\vskip2cm
+    \hrule{}                \par\vskip1cm
+    {\Huge\scshape\Thesistitle}        \par\vskip1cm
+    {\Large\bfseries\Thesissubtitle}     \par\vskip1cm
+    \hrule{}              \par\vskip1cm
+  \end{center}%
+  \par
+  \vskip1.5em plus1fil
+\end{titlepage}%
+\sloppy
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\providecommand{\smaller}{\relax}
+\renewcommand*{\url}[1]{\ThesisLineskipAndBreak\noindent{\ttfamily\smaller%
+  \href{\detokenize{#1}}{\detokenize{#1}}}\penalty0}
+\newcommand*{\doi}[1]{\ThesisLineskipAndBreak\noindent{\ttfamily\scshape%
+ doi:\,\href{http://dx.doi.org/\detokenize{#1}}{\smaller\detokenize{#1}}}\penalty0}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% At End Preamble %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\AtEndPreamble{
+  \makeatletter % Necessary. Why? Who knows.
+  \Thesisinfo{AtEndPreamble : BEGIN}
+
+  \ifx\Thesiscopyright\@empty%©
+    \gdef\ThesispdfxCopyright{Copyright \Thesisbackslashchar copyright \the\year, "\pdfx@Author"}
+  \else
+    \gdef\ThesispdfxCopyright{\Thesiscopyright}
+%    \typeout{copyright : '\Thesiscopyright'}
+  \fi
+  \begingroup
+    \let\BOOKand\and
+    \let\and\ThesismetaSep
+    \newcommand\Thesisxmpdata{
+       \Thesisbackslashchar Title{\pdfx@Title}^^J
+       \Thesisbackslashchar Subject{\pdfx@Subject}^^J
+       \Thesisbackslashchar Keywords{\pdfx@Keywords}^^J
+       \Thesisbackslashchar Author{\pdfx@Author}^^J
+       \Thesisbackslashchar CoverDate{\Thesisdate}^^J
+       \Thesisbackslashchar Copyright{\ThesispdfxCopyright}^^J
+     }
+   \newwrite\file
+   \immediate\openout\file=\jobname.xmpdata
+   \immediate\write\file{\Thesisxmpdata^^J}
+   \closeout\file
+    \let\and\BOOKand
+  \endgroup
+
+  \setlength{\fancy@headwidth}{\textwidth}% fix some issue on the headrule
+
+  \providecommand\thetitle{\Thesistitle}
+  \providecommand\thesubtitle{\Thesissubtitle}
+  \providecommand\thesubject{\Thesissubject}
+  \providecommand\thekeywords{\Thesiskeywords}
+  \providecommand\theauthor{\Thesisauthor}
+  \providecommand\theinstitute{\Thesisinstitute}
+  \providecommand\thecopyright{\Thesiscopyright}
+
+  \Thesisinfo{AtEndPreamble : END '\theauthor'}
+  \makeatother
+}
+%%
+
+%% \AtBeginDocument finishes the setup
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% At Begin Document %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\AtBeginDocument{
+  \Thesisinfo{AtBeginDocument : BEGIN}
+
+  \IfDraft{\reviewtimetoday{\today}{Draft Version }}
+  \ifx\Thesiscopyright\@empty%©
+    \gdef\Thesiscopyright{{©~\the\year, \theauthor.}} %
+  \fi
+  \ifx\Thesisfootmain\@empty
+    \SetThesisfootmain{{\Thesiscopyright}}%
+  \fi
+  \def\Thesisfootmaindraft{\ifdraft%
+     {\tiny\slshape Draft of `{\normalfont\texttt{\jobname}}', {build on "\today"}}
+     \Thesisdraftoverlay{\bfseries Draft}
+   \fi}
+
+  \Thesisinfo{AtBeginDocument : END}
+  \typeout{AtBeginDocument : END: \textcopyright~\the\year, \theauthor}
+}
+% ---------------------------------------------------------------------------------
+\AtVeryEndDocument{
+  \Thesisinfo{AtVeryEndDocument --------------------------------------------------}
+}

@@ -1,0 +1,164 @@
+.thesis-header {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  height: 95vh;
+
+  padding: $pagetitle-padding ($pagetitle-padding / 2);
+  margin: 0 auto $pagetitle-padding auto;
+  color: $pagetitle-fg!important;
+  -webkit-transition: color .5s;
+  background-color: $pagetitle-bg;
+  box-shadow: 0 .5rem 1rem transparentize($pagetitle-bg,.05),
+        inset 0 -1px  0    transparentize($pagetitle-bg, .1);
+  @include border-radius($border-radius-lg);
+  @include make-row();
+  align-items: center;
+  @include media-breakpoint-up(sm) {
+    padding: ($pagetitle-padding * 2) $pagetitle-padding;
+  }
+
+  div, p {
+    @include make-col-ready();
+    width:100%;
+    text-align:center;
+  }
+  .title{
+    @include media-breakpoint-up(sm) {
+      font-size:5rem;
+    }
+    font-variant: small-caps;
+    text-transform: capitalize !important;
+    text-align: center;
+    margin:1.5rem auto;
+    color: rgba($pagetitle-fg,0.98);
+  }
+
+  h1,.title,.subtitle,.authors{
+    font-weight:900;
+    //color: mix(rgba($accent,0.2),white);
+  }
+  .subtitle{
+    margin:1.33rem auto;
+  }
+  .authors{
+    .author{
+      @include media-breakpoint-up(sm) {
+        font-size:2.5rem;
+      }
+      margin:1.25rem 0;
+      padding:0;
+      font-variant: small-caps;
+
+      .affiliation {
+        display: block;
+        margin-top: 1rem;
+        font-weight:400;
+      }
+    }
+  }
+ .affiliation, .date{
+    font-size: 1rem;
+    font-variant: normal;
+    color: rgba($pagetitle-fg,0.8);
+  }
+  .date{
+    font-weight:600;
+  }
+}
+
+.thesis-toc{
+  order: 2;
+  text-overflow: ellipsis;
+  font-size: $font-size-toc;
+  line-height: $font-size-toc*1.125;
+  // background-color: #f5f2f9;
+  //border-bottom: 1px solid rgba($primary-dark, .2);
+  @supports (position: sticky) {
+    position: sticky;
+    overflow-y: auto;
+    z-index: 1000;
+    top: $spacer-toc;
+    height: calc(200vh);
+  }
+  border-left: 1px solid rgba($primary-dark, .2);
+}
+.nav-toc{
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  margin-right: -15px;
+  margin-left: -15px;
+  h1 {font-size: $font-size-base;}
+}
+.toc-item {
+  ul {
+    list-style: none;
+    padding-left: $spacer-toc/4;
+  }
+  &>ul{
+    padding-top:   $spacer-toc;
+    padding-right: $spacer-toc/4;
+    li {font-weight:600;}
+  }
+
+  li{
+    display: block;
+    padding: 0 0 $spacer-toc/4 $spacer-toc/4;
+    color: rgba($primary-dark, .6);
+    -webkit-transition: color .5s;
+
+    &:hover, &>a:hover {
+      color: rgba($accent, .8);
+      text-decoration: none;
+    }
+    &>a{ color: rgba($primary-dark, .65);}
+  }
+  li li {font-weight: 400!important;}
+  ul ul ul {display:none;}
+}
+
+.footer{
+  margin: 0;
+  margin-top: $spacer;
+  font-size: $font-size-foot;
+  @include make-row();
+
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  flex-shrink: 0;
+
+  color: rgba($thesis-banner-fg,0.6);
+  background-color: rgba(darken($thesis-banner-bg,20%),.8);
+  border-top: 2px solid darken($thesis-banner-bg,80%);
+  @supports (position: sticky) {
+    position: sticky;
+    bottom: 0;
+    z-index: $zindex-sticky;
+  }
+  p{margin: 0;}
+  .footer-heading{
+    font-size: $font-size-small;
+    font-weight: 700;
+    vertical-align: middle;
+  }
+  .thesis-license{
+    max-width: 100%;
+    margin:0; padding:0;
+    text-align: left;
+  }
+}
+.footer,
+.btn-goto{
+  & a {
+    color: lighten($thesis-banner-fg, 60%);
+    -webkit-transition: color .5s;
+  }
+  & a:hover {
+     color: $accent;
+     background-color: tr ansparent;
+  }
+}
+.btn-goto{
+  margin-left: $spacer;
+  font-size: $font-size-toc;
+  @include button-variant(rgba($pagetitle-bg,0.4), rgba($pagetitle-bg,0.4));
+}
