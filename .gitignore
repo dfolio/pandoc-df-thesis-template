@@ -1,5 +1,8 @@
 #directories to ignore
 _html/
+_tex/
+_docbook/
+.sass-cache
 
 .remarkrc
 
