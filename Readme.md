@@ -1,4 +1,9 @@
-# D. Folio [Pandoc] thesis template
+---
+author: "D. Folio"
+date: 2018-10-11
+---
+
+# pandoc-df-thesis-template — D. Folio [Pandoc] thesis template
 
 This repository provides the D. Folio template for writing a thesis dissertation
 using [Pandoc], <http://pandoc.org>. Based on a “modified” markdown sources,
@@ -75,7 +80,7 @@ Once a `make <target>` is performed, the following folders should appear:
 - `_docbook/`: for the [DocBook](v5) intermediate files and the chunked `html` files;
 - `_html/`: for the single [HTML5] intermediate files and the single [HTML5] file for web-publications;
 
-### `_md/` {#dir-md}
+### `_md/`
 
 The (modified) markdown sources of your dissertation should be placed in the
 `_md/` directory. The following rules are considered:
@@ -86,12 +91,12 @@ The (modified) markdown sources of your dissertation should be placed in the
 
 If you have a very _big_ dissertation, you may have more than one `X` digit, but it is important to be consistent for all the filenames' definition.
 
-### `_data/` {#dir-data}
+### `_data/`
 
 In the `_data/` directory are placed auxiliary data for your documents:
 
 - `_data/metadata.yml`: metadata for [Pandoc] and its filter (e.g. pandoc-citeproc and pandoc-crossref),
--  `_data/variables.yml`:and variable definition used by our [Pandoc] templates;
+-  `_data/variables.yml`: variable definition used by our [Pandoc] templates;
 - `_data/macros.pp`: the main [PP]-macros that imports all other macros' definition files w.r.t. the dialect target:
     - `_data/latex.pp`: macros for [LaTeX] and then for the `pdf` target;
     - `_data/html.pp`: macros for [HTML];
@@ -99,12 +104,12 @@ In the `_data/` directory are placed auxiliary data for your documents:
     - `_data/glossaries.pp`: where terms, glossaries, acronyms... are defined.
 
 
-### `_tex/` {#dir-tex}
+### `_tex/`
 
 If you want to handle the [LaTeX] source and its compilation process, the intermediate files, and the final [LaTeX] file are build there.
 Let's remember that the final PDF file is build from (Lua)[LaTeX].
 
-### `assets/` {#dir-assets}
+### `assets/`
 
 The role of the `assets/` folder is twofold:
 
