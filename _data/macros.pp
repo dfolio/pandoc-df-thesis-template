@@ -5,6 +5,7 @@ The main macro that imports all other macro definition files.
 --------------------------------------------------------------------------------
 (c) 2017, David FOLIO CC-By-4.0 License.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!macrochars(\!)
 !ifdef(LATEX)(!import(latex.pp))
 !ifdef(HTML)(!import(html.pp))
 !ifdef(XML)(!import(xml.pp))
