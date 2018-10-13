@@ -85,11 +85,16 @@ Once a `make <target>` is performed, the following folders should appear:
 The (modified) markdown sources of your dissertation should be placed in the
 `_md/` directory. The following rules are considered:
 
-- `0X_filename.md`: with `X` a digit, considered as contents to be placed before the body, such as “Acknowledgment”, “Preface”...;
-- `[1-8]X_filename.md`: the main body contents, classically split in parts, chapters and/or sections;
-- `9X_filename.md`: with `X` a digit, considered as contents to be placed after the body, e.g. “References”, “Glossaries”...;
+- `0X_filename.md`: with `X` a digit, considered as contents 'front matter' of the dissertation to be placed before the mainmatter, such as  “Title page”, “Preface”, “Acknowledgment”...;
+- `[1-8]X_filename.md`: the main matter contents, classically split in parts, chapters and/or sections;
+- `9X_filename.md`: with `X` a digit, considered as contents 'back matter' to be placed after the main matter, e.g. “Epilogue”, “References”, “Glossaries”...;
 
 If you have a very _big_ dissertation, you may have more than one `X` digit, but it is important to be consistent for all the filenames' definition.
+
+> #### Notice
+> At this time the 'appendices' are included in the 'main matter'. 
+> Later this should be placed in the 'back matter' to be consistent with “official
+> ” book parts layout 
 
 ### `_data/`
 
