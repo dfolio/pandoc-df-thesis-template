@@ -271,7 +271,7 @@ $endfor$
 \input{../_layouts/pandoc-thesis_styles.tex}
 \input{../_layouts/pandoc-thesis_macros.tex}
 $if(glossary)$
-\input{../$glossary$}
+\input{$glossary$}
 $endif$
 
 \makeatother
