@@ -27,9 +27,9 @@ lot: true
 
 ## HTML template variables
 css_html:
-  - css: 'assets/css/pandoc_thesis.css'
+  - css: 'assets/css/pandoc_thesis_html.css'
     media: 'all'
-  - css: 'assets/css/pandoc_thesis_print.css'
+  - css: 'assets/css/pandoc_thesis_print_html.css'
     media: 'print'
 
 ## LaTeX template variables
