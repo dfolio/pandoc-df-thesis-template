@@ -1,0 +1,23 @@
+{
+  "name": "pandoc-df-thesis-template",
+  "version": "0.3.1",
+  "description": "D. Folio template for writing a thesis dissertation using [Pandoc](http://pandoc.org)",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dfolio/pandoc-df-thesis-template.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "pandoc",
+    "thesis",
+    "template"
+  ],
+  "author": "David FOLIO <david.folio@gmail.com> (http://dfolio.free.fr/)",
+  "license": "CC_by_3.0",
+  "dependencies": {
+    "bootstrap": "^4.1.3"
+  }
+}
