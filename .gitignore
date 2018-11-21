@@ -2,6 +2,7 @@
 _html/
 _tex/
 _docbook/
+build/
 .sass-cache
 
 .remarkrc
