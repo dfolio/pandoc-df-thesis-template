@@ -3,6 +3,8 @@ _html/
 _tex/
 _docbook/
 build/
+node_modules/
+vendor/
 .sass-cache
 
 .remarkrc
