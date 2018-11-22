@@ -1,4 +1,4 @@
 # Acknowledgments {#sec:acknowledgements .unnumbered epub:type=acknowledgments}
 
-Thanks
+And I would like to acknowledge ...
 

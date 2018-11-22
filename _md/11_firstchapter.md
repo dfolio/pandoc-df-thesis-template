@@ -1,6 +1,6 @@
 # A first chapter
 
-Some sample text 
+Some sample text.
 
 ## Est sociis in latus
 
