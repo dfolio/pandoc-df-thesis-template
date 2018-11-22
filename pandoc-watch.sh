@@ -1,32 +1,30 @@
 #!/bin/bash
 
-FORMAT=${1:-'ehtm'}
+TARGET=${1:-'html'}
 shift
-INPUT=${*:-'md/'}
+WATCHED=${*:-'_md/ _sass/ assets/'}
 INOT_OPTS="-rq"
 
 trap ctrl_c INT
-
 function ctrl_c() {
-	echo "ctrl_c: $*"
+	msg "ctrl_c trapped ($*) stop watching...\n"
 	exit 0;
 }
 function msg() {
-	 GOOD="$(tput sgr0)$(tput bold)$(tput setaf 2)"
-	 NORMAL="$(tput sgr0)"
-	 TMT=`date +"*** %F %T"`
-	 printf " ${GOOD}*[${TMT}]${NORMAL} $*"
+	 printf " $(tput sgr0)$(tput bold)$(tput setaf 2)[`date +"%F %T"`]$(tput sgr0) $*"
 	 return 0
-
 }
-#echo  "[FORMAT] INPUT ${INPUT}"
-#exit 0
-#make $FORMAT
 
-while  true; do
-  #sleep 0.2
-	make $FORMAT ;
-	msg  "Watching ${INPUT} ..."
-	inotifywait $INOT_OPTS -e MODIFY -e CREATE -e MOVE -e CLOSE_WRITE ${INPUT}
-	msg "inotifywait '$*' '$!'"
+while file=$(inotifywait -rq -e delete -e create -e modify -e move --exclude '/\..+' --format %f $WATCHED); do
+  msg "Detected change for: '$file'\n"
+  case "$file" in
+    *.md | *.scss | *.svg | *.png )
+    make $TARGET
+    ;;
+    *)
+     msg "ignore $file\n"
+    ;;
+  esac
 done
+
+
