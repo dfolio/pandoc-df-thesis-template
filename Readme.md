@@ -3,9 +3,9 @@
 This repository provides the D. Folio template for writing a thesis dissertation using [Pandoc], <http://pandoc.org>. Based on a “modified” markdown sources, this thesis template can deal with many outputs dialect basically supported by [Pandoc]:
 
 - `pdf`: (**preferred**) output generated from (lua)[LaTeX];
-- `html`: single (based solely on [Pandoc]) and multi (based on [Jekyl])  [HTML5] file for web-publications;
+- `html`: single (based solely on [Pandoc]) and multi (based on [Jekyll])  [HTML5] file, e.g. for web-publications;
 - `epub`: [EPUB] v3 ebook;
-- `docbook5`: XML [DocBook] and HTML chunked files;
+- `docbook5`: XML/[DocBook] (v5) and HTML chunked files;
 - `odt`: LibreOffice/OpenOffice OpenDocument [ODT];
 - `docx`: Microsoft Word [DOCX];
 
@@ -70,7 +70,7 @@ Once a `make <target>` is performed, the following folders should appear:
 
   - `build/<MAIN_DOC_BASENAME>.<target>`: the single file targets, e.g. when targets are `pdf`, `epub`, `docx`, `odt`.
 
-      If the target is `html` with `BUILD_HTML_FORMAT = htmlsimple` (ie. base solely on [Pandoc]).
+      If the target is `html` with `BUILD_HTML_FORMAT = htmlsimple` (ie. based solely on [Pandoc]).
 
       If the target is `xml`  the base [DocBook] (v5)  file is generated here.
 
