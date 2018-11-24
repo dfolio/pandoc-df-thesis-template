@@ -1,8 +1,3 @@
----
-author: "D. Folio"
-date: 2018-10-11
----
-
 # pandoc-df-thesis-template — D. Folio [Pandoc] thesis template
 
 This repository provides the D. Folio template for writing a thesis dissertation using [Pandoc], <http://pandoc.org>. Based on a “modified” markdown sources, this thesis template can deal with many outputs dialect basically supported by [Pandoc]:
@@ -110,7 +105,7 @@ If you have a very _big_ dissertation/book, you may have more than one `X` digit
 
 In the `_data/` directory are placed auxiliary data for your documents:
 
-- `_data/metadata.yml`: metadata for [Pandoc] and its filter (e.g. pandoc-citeproc and pandoc-crossref),
+- `_data/metadata.yml`: metadata for [Pandoc] and its filter (e.g. pandoc-citeproc and pandoc-crossref); \
     **Notes**: as stated in [Pandoc] documentation metadata values specified inside the document, or from the commandline overwrite values specified with this file!
 
 - `_data/variables.yml`: variable definition used by our [Pandoc] templates; \
@@ -118,7 +113,7 @@ In the `_data/` directory are placed auxiliary data for your documents:
 
 - `_data/macros.pp`: the main [PP]-macros that imports all other macros' definition files w.r.t. the dialect target:
     - `_data/latex.pp`: macros for [LaTeX] and then for the `pdf` target;
-    - `_data/html.pp`: macros for [HTML];
+    - `_data/html.pp`: macros for [HTML5];
     - `_data/docbook.pp`: macros for [DocBook];
     - `_data/glossaries.pp`: where terms, glossaries, acronyms… are defined.
 
