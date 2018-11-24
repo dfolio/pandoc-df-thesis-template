@@ -14,8 +14,8 @@
 # SIMPLE CONFIGURATION #########################################################
 
 #Select the HTML format 
-# TODO:  htmlsimple,  htmlmulti,
 BUILD_HTML_FORMAT   ?= htmlmulti
+#BUILD_HTML_FORMAT   ?= htmlsimple
 #Select the prefered build strategy
 #BUILD_TEX_STRATEGY  ?= pdflatex
 BUILD_TEX_STRATEGY  ?= lualatex
@@ -25,7 +25,6 @@ BUILD_BIB_STRATEGY  ?= biblatex
 
 # Select the default targets
 # Values any of:  pdf, html, epub, odt, docx, xml/DocBook
-# TODO:  htmlsimple, cssframes, htmlmulti,
 BUILD_DEFAULT_TARGETS       ?= html pdf
 
 # Specify the main output document basename 
@@ -90,16 +89,19 @@ OUTDIR	    ?= build
 # Subdirs 
 # where all templates are stored
 TEMPLATEDIR	?=_layouts
+TEMPLATEJEKYLLDIR   ?= $(TEMPLATEDIR)/jekyll
 # data/variables/macro/glossaries should be placed in DATADIR
 DATADIR 		?=_data
 # various stuff can be placed ASSETSDIR such as bib, media, fonts...
 # but, "publishable" (eg. in case of html outputs) files must be placed in "$(OUTDIR)/$(ASSETSDIR)"
 # Some subdir of the initial ASSETSDIR could be copied   "$(OUTDIR)/$(ASSETSDIR)"
 ASSETSDIR		?=assets
+OUT_ASSETSDIR		?=$(OUTDIR)/$(ASSETSDIR)
 BIBDIR  		?=$(ASSETSDIR)/bib
+OUT_BIBDIR  		?=$(OUT_ASSETSDIR)/bib
 MEDIADIR 		?=$(ASSETSDIR)/media
 FIGDIR  		?=$(ASSETSDIR)/fig
-OUT_FIGDIR	?=$(OUTDIR)/$(FIGDIR)
+OUT_FIGDIR	?=$(OUT_ASSETSDIR)/fig
 # Output directories for intermediates files 
 MDHDIR   		?=$(OUTDIR)/mdh
 MDXDIR   		?=$(OUTDIR)/mdx
@@ -107,8 +109,9 @@ MDTDIR   		?=$(OUTDIR)/mdt
 # Output directories for generated files 
 TEXDIR  		?=$(MDTDIR)
 HTMLDIR 		?=$(OUTDIR)
+HTMLMULTIDIR?=$(OUTDIR)/html
 XMLDIR 			?=$(OUTDIR)
-CHUNKDIR 		?=$(OUTDIR)/chunk
+CHUNKDIR 		?=$(HTMLMULTIDIR)
 # SASS/CSS dirs 
 CSSDIR  		?=$(OUTDIR)/$(ASSETSDIR)/css
 SCSSDIR 		?=$(ASSETSDIR)/scss
@@ -117,7 +120,7 @@ SASSDIR 		?=_sass
 NODEDIR     ?=node_modules
 SCSSINCS 		?=$(SASSDIR) $(NODEDIR)/bootstrap/scss
 
-prepare_targets+=bootstrap
+prepare_targets+=$(NODEDIR)/bootstrap
 
 # END SIMPLE CONFIGURATION
 ################################################################################
@@ -147,7 +150,7 @@ VARSDATA		?=$(DATADIR)/variables.yml
 ## Put here all the necessary bibliography files
 BIBFILES    ?=$(BIBDIR)/string.bib $(BIBDIR)/thesis-biblio.bib
 ## Where all bibliographies are merged
-BIB         ?=$(BIBDIR)/bibliography.bib
+BIB         ?=$(OUT_BIBDIR)/bibliography.bib
 CSL					?=$(TEMPLATEDIR)/Thesis-ieee-style.csl
 XSL         ?=$(TEMPLATEDIR)/xsl/html5.xsl
 
@@ -168,7 +171,7 @@ GLOSSARIES      ?=$(DATADIR)/glossaries.pp
 ## The generated glossaries for HTML outputs
 ## Set the digit to position properly the glossaries in either the front matter
 ## or in the back matter (default: 97)  
-GLOSSARIES_MDH ?=$(HTMLDIR)/97_glossaries.mdh
+GLOSSARIES_MDH  ?=$(MDHDIR)/97_glossaries.mdh
 GLOSSARIES_XML  ?=$(XMLDIR)/glossaries.xml
 GLOSSARIES_TEX  ?=$(TEXDIR)/glossaries.tex
 
@@ -206,6 +209,7 @@ EGREP     ?= egrep
 FIND      ?= find
 GREP      ?= grep
 MKDIR			?= mkdir -p
+MKTEMP		?= mktemp
 MV        ?= mv -f
 SED       ?= sed
 SORT		  ?= sort
@@ -229,15 +233,18 @@ DOT       ?= dot          # GraphViz
 DOT2TEX   ?= dot2tex      # dot2tex - add options (not -o) as needed
 GNUPLOT   ?= gnuplot      # GNUplot
 INKSCAPE  ?= inkscape -z  # Inkscape (svg support)
-POTRACE  ?= potrace      # Inkscape (svg support)
+POTRACE   ?= potrace      # Inkscape (svg support)
 SVGO  		?= svgo
 SCOUR			?= scour
 # == Usefull external program 
 GUNZIP    ?= gunzip       # GZipped file
 NPM 	  	?= npm
 RUBY 			?= ruby
-SASS 			?= node_modules/.bin/sass
-SYNC			?= rsync -r -n -t -p -o -g -v --progress -u -c -l -z -s
+GEM       ?= gem
+BUNDLE    ?= bundle
+JEKYLL   ?= jekyll
+SASS 			?= $(NODEDIR)/.bin/sass
+RSYNC			?= rsync 
 TAR       ?= tar          # To make archive
 UNZIP 		?= unzip -q
 XSLTPROC	?= xsltproc
@@ -256,6 +263,8 @@ TODAY       := $(shell $(DATE) +"%F")
 # Default image extension. 
 # Suitable value can be svg (prefered) or png
 default_image_extension ?= svg
+
+RSYNC_FLAGS   ?=-r -t -p -o -g -l -c -z -u -s -a
 
 # PP:  text preprocessor designed for Pandoc 
 PP_FLAGS      ?= -$(MAINLANG) -img=$(FIGDIR)
@@ -279,7 +288,7 @@ PANDOC_FLAGS    ?=\
   --metadata=date:"$(TODAY)"
   
 ## Pandoc Markdown extensions
-PANDOC_MDEXT      ?=+abbreviations
+PANDOC_MDEXT      ?=+raw_html+raw_tex+abbreviations+yaml_metadata_block+header_attributes+definition_lists
 
 ## Pandoc  Bibliography options managed with pandoc-citeproc
 PANDOC_CITEPROC_FLAGS  ?= --file-scope\
@@ -291,34 +300,30 @@ PANDOC_MDH_FLAGS  ?= 	--file-scope -F pandoc-crossref
 
 ## Options for HTML output
 ## Note CSS files must be defined in VARSDATA file not here
-PANDOC_HTML_FLAGS ?=\
+PANDOC_HTML_FLAGS ?= $(PANDOC_MDH_FLAGS) \
   $(PANDOC_CITEPROC_FLAGS) --file-scope --standalone\
-	--default-image-extension=${default_image_extension} --mathjax \
+	--default-image-extension=$(default_image_extension) --mathjax \
   --template=$(TEMPLATEDIR)/template.html5
   
 ## Options for XML/DocBook output
-PANDOC_XML_FLAGS ?= --file-scope  --standalone\
-	$(PANDOC_CITEPROC_FLAGS)\
-	--default-image-extension=${default_image_extension} --mathml\
+PANDOC_XML_FLAGS ?= $(PANDOC_MDH_FLAGS) 	$(PANDOC_CITEPROC_FLAGS)\
+	--default-image-extension=$(default_image_extension) --mathml\
   --template=$(TEMPLATEDIR)/template.docbook5
   
 ## Options for EPUB output
-PANDOC_EPUB_FLAGS ?= --file-scope -standalone \
-	$(PANDOC_CITEPROC_FLAGS) \
-	--default-image-extension=${default_image_extension} \
+PANDOC_EPUB_FLAGS ?=  $(PANDOC_MDH_FLAGS) $(PANDOC_CITEPROC_FLAGS)\
+	--default-image-extension=$(default_image_extension) \
   --css=$(CSSDIR)/pandoc_thesis_epub.css \
   --template=$(TEMPLATEDIR)/template.epub3
   
 ## Options for DOCX output
-PANDOC_DOCX_FLAGS ?=\
-	$(PANDOC_CITEPROC_FLAGS) --file-scope \
+PANDOC_DOCX_FLAGS ?= $(PANDOC_MDH_FLAGS) $(PANDOC_CITEPROC_FLAGS)\
 	--data-dir=$(TEMPLATEDIR) \
 	--reference-doc=$(TEMPLATEDIR)/template.docx \
 	--default-image-extension=emf
 	
 ## Options for ODT output
-PANDOC_ODT_FLAGS  ?= --file-scope\
-	$(PANDOC_CITEPROC_FLAGS) \
+PANDOC_ODT_FLAGS  ?= $(PANDOC_MDH_FLAGS) $(PANDOC_CITEPROC_FLAGS)\
 	--data-dir=$(TEMPLATEDIR) \
 	--reference-doc=$(TEMPLATEDIR)/template.odt \
 	--default-image-extension=png
@@ -342,7 +347,7 @@ PANDOC_TEX_FLAGS  ?= --file-scope -standalone\
 ## LaTex/pdfLaTeX/xeLateX/luaLaTeX flag
 TEXFLAGS      ?= -synctex=1 --shell-escape
 
-SASS_FLAGS    ?= --load-path="$(SASSDIR)" --load-path="node_modules/"
+SASS_FLAGS    ?= --load-path="$(SASSDIR)" --load-path="$(NODEDIR)"
 
 XSLT_FLAGS    ?= --nonet --xinclude \
 	--path "/usr/share/sgml/docbook/xsl-stylesheets" \
@@ -385,11 +390,13 @@ endif
 ifdef VERBOSE
 TEXFLAGS    += -interaction=nonstopmode
 PANDOC_FLAGS+= --verbose
+RSYNC_FLAGS += --verbose -h --progress
 else
 TEXFLAGS    += -interaction=batchmode -file-line-error
 BIBTEX      += -terse
 PANDOC_FLAGS+= --quiet
 SASS_FLAGS  += --quiet
+RSYNC_FLAGS += --quiet
 endif
 
 # Turn on shell debugging with SHELL_DEBUG=1
@@ -636,10 +643,13 @@ ifdef GLOSSARIES
 files_mdh         := $(sort $(files_mdh) $(GLOSSARIES_MDH))
 endif
 
+# MDX
 files_mdx         := $(files_noext:$(INDIR)/%=$(MDXDIR)/%.mdx)
 
-files_scss        :=$(wildcard $(SCSSDIR)/*.scss)
+# SCSS/CSS files
+files_scss        := $(wildcard $(SCSSDIR)/*.scss)
 files_css         := $(patsubst $(SCSSDIR)/%.scss,$(CSSDIR)/%.css,$(files_scss))
+html_css          := $(filter %html.css,$(files_css))
 
 ## Figures
 figures     != $(GREP) -sho '\($(FIGDIR)/[^{}\"\)]*\)' $(files_sources) | $(UNIQ)
@@ -657,9 +667,12 @@ bib_deps  += $(CSL) $(BIBFILES)
 css_deps  += $(SCSSINCS) $(foreach d,  $(SCSSINCS), $(wildcard $(d)/*.scss))
 mdh_deps	+= $(MDHDIR) $(files_mdh) $(base_deps) $(PP_HTML_MACROS)  $(bib_deps)
 html_deps	+= $(HTMLDIR) $(OUT_FIGDIR) $(mdh_deps) $(TEMPLATEDIR)/template.html5 \
-  $(SCSSINCS) $(filter %html.css,$(files_css)) $(fig_svg)
+  $(SCSSINCS) $(html_css) $(fig_svg)
 ifdef GLOSSARIES
 html_deps += $(PP_GLO_HTML)
+endif
+ifeq ($(BUILD_HTML_FORMAT), htmlmulti)
+html_deps += $(htmlmuli_temp)
 endif
 
 epub_deps	+= $(mdh_deps) $(TEMPLATEDIR)/template.epub3 \
@@ -711,8 +724,7 @@ watch-pdf:
 endif
 
 test:
-	$(QUIET)$(call echo-run,$(PANDOC),,$@)
-	$(QUIET)$(ECHO) "HTML clean:  $(clean_html_files)"
+	$(QUIET)$(ECHO) "fig_svg  $(fig_svg) "
 ################################################################################
 # MAIN TARGETS
 #
@@ -720,25 +732,26 @@ test:
 # HTML Output target
 .PHONY: html
 #.SECONDARY: $(HTMLDIR)/$(MAIN_DOC_BASENAME).html
-html: $(HTMLDIR)/$(MAIN_DOC_BASENAME).html
-
-html-deps:$(html_deps)
-	$(QUIET)$(call echo-dep,html,$(html_deps))
-	
-$(HTMLDIR)/$(MAIN_DOC_BASENAME).html: $(html_deps)
+html: 
 ifeq ($(BUILD_HTML_FORMAT), htmlsimple)
-	$(QUIET)$(call echo-run,$(PANDOC),,$@)
-	$(QUIET)$(PANDOC) -f markdown$(PANDOC_MDEXT) \
-	  $(PANDOC_FLAGS) $(VARSDATA) $(PANDOC_HTML_FLAGS)\
-	  $(MDH) -t html5 -o $@ 
-	$(call echo-end-target,$@)
+	$(QUIET)$(MAKE) $(HTMLDIR)/$(MAIN_DOC_BASENAME).html
 endif
 ifeq ($(BUILD_HTML_FORMAT), htmlmulti)
-	$(QUIET)$(ECHO) "$(C_FAILURE)'htmlmulti' not yet implemented$(C_RESET)"
-	$(call echo-end-target,$@)
+	$(QUIET)$(MAKE) run-jekyll;
 endif
 ifeq ($(BUILD_HTML_FORMAT), html_db_chunk)
 	$(QUIET)$(MAKE) xml-chunk
+endif
+
+html-deps:$(html_deps)
+	$(QUIET)$(call echo-dep,html,$(html_deps))
+
+ifeq ($(BUILD_HTML_FORMAT), htmlsimple)
+$(HTMLDIR)/$(MAIN_DOC_BASENAME).html: $(html_deps)
+	$(QUIET)$(call echo-run,$(PANDOC),,$@)
+	$(QUIET)$(PANDOC) -f markdown$(PANDOC_MDEXT) \
+	  $(PANDOC_FLAGS) $(VARSDATA) $(PANDOC_HTML_FLAGS)\
+	  $(files_mdh) -t html5 -o $@ 
 	$(call echo-end-target,$@)
 endif
 
@@ -751,7 +764,7 @@ $(OUTDIR)/$(MAIN_DOC_BASENAME).epub:$(epub_deps)
 	$(QUIET)$(call echo-run,$(PANDOC),,$@)
 	$(QUIET)$(PANDOC) -f markdown$(PANDOC_MDEXT) \
 	  $(PANDOC_FLAGS) $(VARSDATA) $(PANDOC_EPUB_FLAGS)\
-	  $(MDH) -t epub3 -o $@ 	
+	  $(files_mdh) -t epub3 -o $@ 	
 	$(call echo-end-target,$@)
 
 ## DOCX Output target
@@ -763,7 +776,7 @@ $(OUTDIR)/$(MAIN_DOC_BASENAME).docx:$(docx_deps)
 	$(QUIET)$(call echo-run,$(PANDOC),,$@)
 	$(QUIET)$(PANDOC) -f markdown$(PANDOC_MDEXT) \
 	  $(PANDOC_FLAGS) $(VARSDATA) $(PANDOC_DOCX_FLAGS)\
-	  $(MDH) -t docx -o $@ 	
+	  $(files_mdh) -t docx -o $@ 	
 	$(call echo-end-target,$@)
 
 ## ODT Output target
@@ -775,7 +788,7 @@ $(OUTDIR)/$(MAIN_DOC_BASENAME).odt:$(odt_deps)
 	$(QUIET)$(call echo-run,$(PANDOC),,$@)
 	$(QUIET)$(PANDOC) -f markdown$(PANDOC_MDEXT) \
 	  $(PANDOC_FLAGS) $(VARSDATA) $(PANDOC_ODT_FLAGS)\
-	  $(MDH) -t odt -o $@ 
+	  $(files_mdh) -t odt -o $@ 
 	$(call echo-end-target,$@)
 
 # XML/DocBook Output target
@@ -794,7 +807,7 @@ $(XMLDIR)/$(MAIN_DOC_BASENAME).xml: $(xml_deps)
 	$(QUIET)$(call echo-run,$(PANDOC),,$@)
 	$(QUIET)$(PANDOC) -f markdown$(PANDOC_MDEXT) \
 	  $(PANDOC_FLAGS) $(VARSDATA) $(PANDOC_XML_FLAGS)\
-	  $(MDH) -t docbook5 -o $@ 
+	  $(files_mdx) -t docbook5 -o $@ 
 	$(SED) -e 's/sec:/sec-/g' -e 's/fig:/fig-/g' -e 's/tbl:/tbl-/g' -e 's/eq:/eq-/g' -e 's/[^xml:]id=/ xml:id=/g' < $@ > $@.sed && \
 	  $(call replace-if-different-and-remove,$@.sed,$@)
 	$(call echo-end-target,$@)
@@ -806,6 +819,14 @@ pdf: $(TEXDIR)/$(MAIN_DOC_BASENAME).pdf
 
 $(TEXDIR)/$(MAIN_DOC_BASENAME).pdf:
 	$(QUIET)$(ECHO) "$(C_FAILURE) build of $@ not yet implemented$(C_RESET)"
+
+# Merge all bibliography in BIB
+.PHONY: biblio
+biblio:$(BIB)
+$(BIB):$(BIBFILES)
+	$(QUIET)$(call echo-build,"Merge",$(BIBFILES),$@)
+	$(QUIET)$(MKDIR) $(OUT_BIBDIR)
+	$(QUIET)$(CAT) $(BIBFILES) > $(BIB)
 
 #########################
 # Intermediate MDH rules for html/epub/docx/odt 
@@ -830,12 +851,14 @@ $(MDXDIR)/%.mdx:$(MDDIR)/%.md
 	  
 ################################################################################
 #  Intermediate Glossaries rules
-$(GLOSSARIES_MDH) $(PP_GLO_HTML):$(GLOSSARIES) $(PP_HTML_MACROS) $(PP_MACROS)
+$(GLOSSARIES_MDH) $(PP_GLO_HTML): $(GLOSSARIES) $(PP_HTML_MACROS) $(PP_MACROS)
 	$(QUIET)$(call echo-run,$(PP),$<,$@)
+	$(QUIET)$(MKDIR) $(MDHDIR)
 	$(PP) $(PP_FLAGS) -DHTML=1 -import=$(PP_MACROS) -D_PP_GLO_TMP=$(PP_GLO_HTML) $(GLOSSARIES) > $(GLOSSARIES_MDH)
 
-$(GLOSSARIES_XML) $(PP_GLO_XML):$(GLOSSARIES) $(PP_XML_MACROS) $(PP_MACROS)
+$(GLOSSARIES_XML) $(PP_GLO_XML): $(GLOSSARIES) $(PP_XML_MACROS) $(PP_MACROS)
 	$(QUIET)$(call echo-run,$(PP),$<,$@)
+	$(QUIET)$(MKDIR) $(MDXDIR)
 	$(PP) $(PP_FLAGS) -DXML=1 -import=$(PP_MACROS) -D_PP_GLO_TMP=$(PP_GLO_XML)  $(GLOSSARIES) > $(GLOSSARIES_XML)
 
 ########################
@@ -845,21 +868,17 @@ $(CSSDIR)/%.css:$(SCSSDIR)/%.scss $(css_deps)
 	$(QUIET)$(call echo-run,$(SASS),$<,$@)
 	$(QUIET)$(MKDIR) $(CSSDIR); 	$(SASS) $(SASS_FLAGS) $< $@
 
-.SECONDARY: bootstrap  node_modules/bootstrap/scss
-node_modules/bootstrap/scss: bootstrap
-	$(QUIET)$(ECHO) "$(C_INFO) Bootstrap will be updated in the local folder$(C_RESET)"
+.SECONDARY:  $(NODEDIR)/bootstrap/scss
+$(NODEDIR)/bootstrap/scss: $(NODEDIR)/bootstrap
+	$(QUIET)$(ECHO) "$(C_INFO) Bootstrap is in '$(NODEDIR)/bootstrap/' folder$(C_RESET)"
 	$(QUIET)$(NPM) update bootstrap
 
-$(SASS):
-	$(QUIET)$(ECHO) "$(C_INFO) SASS will be installed in the local folder$(C_RESET)"
-	$(QUIET)$(NPM) install sass
-	$(QUIET)$(ECHO) "$(C_INFO) SASS is now in 'node_modules/bootstrap/'$(C_RESET)"
+$(SASS):$(NODEDIR)/sass
+	$(QUIET)$(ECHO) "$(C_INFO) SASS is  in '$(NODEDIR)/sass'$(C_RESET)"
 
 # get bootstrap and its dependancies
-bootstrap:
-	$(QUIET)$(ECHO) "$(C_INFO) Bootstrap will be installed in the local folder$(C_RESET)"
-	$(QUIET)$(NPM) install bootstrap jquery popper.js
-	$(QUIET)$(ECHO) "$(C_INFO) Bootstrap is now in 'node_modules/bootstrap/'$(C_RESET)"
+bootstrap:$(NODEDIR)/bootstrap
+	$(QUIET)$(ECHO) "$(C_INFO) Bootstrap is in '$(NODEDIR)/bootstrap'$(C_RESET)"
 ################################################################################
 #  Intermediate Figures rules
 # Converts svg files into .eps files
@@ -868,7 +887,7 @@ bootstrap:
 svg:$(fig_svg) $(OUT_FIGDIR)
 $(FIGDIR)/%.svg:$(MEDIADIR)/%.svg
 	$(QUIET)$(call echo-graphic,$^,$<,$@)
-	$(QUIET)$(INKSCAPE)	 --vacuum-defs --export-area-page --export-plain-svg=$@ $<
+	$(QUIET)$(INKSCAPE) --vacuum-defs --export-area-page --export-plain-svg=$@ $<
 ifeq "$(if $(shell $(WHICH) $(SVGO) 2>/dev/null),1,)" "1"
 	$(QUIET)$(SVGO) --enable={cleanupIDs,collapseGroups,removeUnusedNS,removeUselessStrokeAndFill,removeUselessDefs,removeComments,removeMetadata,removeEmptyAttrs,removeEmptyContainers} $@
 endif
@@ -882,6 +901,14 @@ $(OUT_FIGDIR)/%.svg:$(MEDIADIR)/%.jpg
 $(OUT_FIGDIR)/%.svg:$(MEDIADIR)/%.tif
 	$(QUIET)$(call echo-graphic,$^,$@)
 	$(QUIET)$(CONVERT) $< $@
+	
+$(OUT_FIGDIR)/%.emf:$(MEDIADIR)/%.svg
+	$(QUIET)$(call echo-graphic,$^,$@)
+	$(QUIET)$(INKSCAPE) --vacuum-defs --export-area-page --export-emf=$@ $<
+	
+$(OUT_FIGDIR)/%.emf:$(OUT_FIGDIR)/%.svg
+	$(QUIET)$(call echo-graphic,$^,$@)
+	$(QUIET)$(INKSCAPE) --vacuum-defs --export-area-page --export-emf=$@ $<
 
 ################################################################################
 # PREPARE TARGETS
@@ -892,7 +919,134 @@ prepare: dirs $(prepare_targets)
 dirs: $(dir_prep)
 $(dir_prep):
 	$(QUIET)$(MKDIR) $@
+ifeq ($(BUILD_HTML_FORMAT), htmlmulti)
+	$(QUIET)$(MAKE) $(htmlmuli_temp)
+endif
 
+# Install a npm module
+$(NODEDIR)/%:
+	$(QUIET)$(ECHO) "$(C_INFO) $@ will be installed in the local folder$(C_RESET)"
+	$(QUIET)$(call echo-run,$(NPM),$<,$@)
+	$(QUIET)$(ECHO) "npm install $(@:$(NODEDIR)/%=%)"
+	$(QUIET)$(ECHO) "$(C_INFO) $(@:$(NODEDIR)/%=%) is now in '$@'$(C_RESET)"
+
+ifeq ($(BUILD_HTML_FORMAT), htmlmulti)
+REAL_BUNDLE   := $(shell $(WHICH) $(BUNDLE))
+REAL_JEKYLL   := $(BUNDLE) exec $(JEKYLL)
+
+htmlmuli_temp ?= $(OUTDIR)/htmlmuli.tmp
+htmlmulti_mdh := $(files_mdh:$(MDHDIR)/%.mdh=$(htmlmuli_temp)/%.mdh)
+htmlmulti_md  := $(htmlmulti_mdh:%.mdh=%.md)
+htmlmulti_dep += $(htmlmuli_temp) $(htmlmuli_temp)/$(MAIN_DOC_BASENAME).mdh\
+  $(htmlmulti_md) $(htmlmuli_temp)/.synced
+
+$(htmlmuli_temp):
+	$(QUIET)$(echo_dt) "$(C_BUILD)Prepare 'htmlmuti' output with jekyll in '$(htmlmuli_temp)' $(C_RESET)"
+	$(QUIET)$(MKDIR) $(htmlmuli_temp)
+$(htmlmuli_temp)/.synced: $(htmlmuli_temp) $(wildcard $(TEMPLATEJEKYLLDIR)/*)
+	$(QUIET)$(call echo-run,$(RSYNC),$<,$@)
+	$(QUIET)$(call clean-files,$(htmlmuli_temp)/.synced)
+	$(QUIET)$(RSYNC) $(RSYNC_FLAGS) $(TEMPLATEJEKYLLDIR)/* $(htmlmuli_temp)\
+	&& $(TOUCH) $(htmlmuli_temp)/.synced
+
+htmlmulti_dep   += $(htmlmuli_temp)/metadata.yml $(htmlmuli_temp)/variables.yml
+
+$(htmlmuli_temp)/metadata.yml: $(METADATA)
+	$(QUIET)$(call echo-run,$(RSYNC),$<,$@)
+	$(QUIET)$(RSYNC) $(RSYNC_FLAGS) $(METADATA) $(htmlmuli_temp)/
+
+$(htmlmuli_temp)/variables.yml: $(VARSDATA)
+	$(QUIET)$(call echo-run,$(RSYNC),$<,$@)
+	$(QUIET)$(RSYNC) $(RSYNC_FLAGS) $(VARSDATA) $(htmlmuli_temp)/_data/
+	
+htmlmulti_csl   := $(htmlmuli_temp)/assets/bib/$(notdir $(CSL))
+htmlmulti_bib   := $(htmlmuli_temp)/assets/bib/$(notdir $(BIB))
+htmlmulti_dep   += $(htmlmulti_csl) $(htmlmulti_bib)
+
+$(htmlmulti_csl): $(CSL)
+	$(QUIET)$(call echo-run,$(RSYNC),$<,$@)
+	$(QUIET)$(RSYNC) $(RSYNC_FLAGS) $(CSL) $(htmlmuli_temp)/assets/bib/
+$(htmlmulti_bib): $(BIB)
+	$(QUIET)$(call echo-run,$(RSYNC),$<,$@)
+	$(QUIET)$(RSYNC) $(RSYNC_FLAGS) $(BIB) $(htmlmuli_temp)/assets/bib/
+
+htmlmulti_css   := $(html_css:$(CSSDIR)/%.css=$(htmlmuli_temp)/assets/css/%.css)
+htmlmulti_dep   += $(htmlmulti_css)
+$(htmlmuli_temp)/assets/css/%.css: $(CSSDIR)/%.css
+	$(QUIET)$(call echo-run,$(RSYNC),$<,$@)
+	$(QUIET)$(RSYNC) $(RSYNC_FLAGS) $< $@
+
+htmlmulti_fig   := $(fig_$(default_image_extension):$(OUT_FIGDIR)/%.$(default_image_extension)=$(htmlmuli_temp)/assets/fig/%.$(default_image_extension))
+htmlmulti_dep   += $(htmlmulti_fig)
+$(htmlmuli_temp)/assets/fig/%: $(OUT_FIGDIR)/%
+	$(QUIET)$(call echo-run,$(RSYNC),$<,$@)
+	$(QUIET)$(RSYNC) $(RSYNC_FLAGS) $< $@
+	
+$(htmlmuli_temp)/.bundle_installed: | $(htmlmuli_temp)
+	$(QUIET)$(call echo-run,$(GEM),$(REAL_BUNDLE))
+	$(QUIET)$(call clean-files,$(htmlmuli_temp)/.bundle_installed)
+	$(QUIET)cd $(htmlmuli_temp) && $(GEM) install bundler && cd -\
+	&& $(TOUCH) $(htmlmuli_temp)/.bundle_installed
+
+$(htmlmuli_temp)/.jekyll_installed: |$(htmlmuli_temp) $(htmlmuli_temp)/.bundle_installed 
+	$(QUIET)$(call echo-run,$(BUNDLE),Jekyll)
+	$(QUIET)$(call clean-files,$(htmlmuli_temp)/.jekyll_installed)
+	$(QUIET)cd $(htmlmuli_temp) && $(REAL_BUNDLE) update && cd - \
+	&& $(TOUCH) $(htmlmuli_temp)/.jekyll_installed
+
+
+$(htmlmuli_temp)/%.mdh:$(MDHDIR)/%.mdh
+	$(QUIET)$(call echo-run,$(RSYNC),$<,$@)
+	$(QUIET)$(RSYNC) $(RSYNC_FLAGS) $< $@
+
+$(htmlmuli_temp)/$(MAIN_DOC_BASENAME).mdh: $(htmlmulti_mdh) $(htmlmuli_temp)/variables.yml 
+	$(QUIET)$(call echo-run,"Prepare Markdown for jekyll [1]",$<,$@)
+	$(PANDOC) -f markdown$(PANDOC_MDEXT) $(PANDOC_FLAGS) $(PANDOC_MDH_FLAGS) -t markdown$(PANDOC_MDEXT) $(htmlmulti_mdh) -o "$@"
+
+$(htmlmuli_temp)/%.md_tmp:$(htmlmuli_temp)/%.mdh
+	$(QUIET)$(call echo-run,"Prepare Markdown for jekyll [1]",$<,$@)
+	$(PANDOC) -f markdown$(PANDOC_MDEXT) $(PANDOC_FLAGS) $(PANDOC_MDH_FLAGS) -t markdown$(PANDOC_MDEXT) $< -o "$@"
+
+$(htmlmuli_temp)/%.md:$(htmlmuli_temp)/%.md_tmp $(htmlmuli_temp)/%.mdh
+	$(QUIET)$(call echo-run,"Prepare Markdown for jekyll [2]",$<,$@)
+	$(QUIET)$(ECHO) -e "---\nlayout: default\n"> $@
+	$(EGREP) '^# ' $< | $(SED) -e 's/^# \(.*\)[[:space:]]*\({#.*}\)/title: \1/g' >> $@
+	$(ECHO) "section: "  >> $@
+	$(EGREP) '^## ' $< | $(SED) \
+	  -e 's/^## \(.*\)[[:space:]]*{#\(.*\)}/  - \n    title: \1\n    ref: \2/g'\
+	  -e 's/^## \(.*\)/  - \1/g'  >> $@
+	$(QUIET)$(ECHO)  "---">> $@
+	$(QUIET)$(CAT) $(basename $<).mdh >> $@	
+	$(QUIET)$(ECHO) "Try to fix undefined references... "
+	undefined_ref=`$(EGREP) -oh "\*\*¿[^ .]*" $< | $(SED) -e 's/[\*¿\?]//g'`;\
+	  for unref in $${undefined_ref}; do \
+	    found_in=`$(EGREP) -l "\{#$${unref}\}" $(files_mdh) | tr -d '\n'` ; \
+	    found_name=`basename $${found_in} .mdh` ; \
+	    found_lbl=`$(EGREP) -oh "\[[^]]*\]\(#$${unref}\)" $(htmlmuli_temp)/$(MAIN_DOC_BASENAME).mdh | $(SED) -e "s/(#$${unref})/($${found_name}#$${unref})/g" `; \
+	    $(ECHO) "Found underfined ref '$${unref}' in $${found_in} with $${found_lbl}...";\
+	    $(SED) -e "s/\[@$${unref}\]/$${found_lbl}/" $@ > $@.sed && \
+	  $(call replace-if-different-and-remove,$@.sed,$@); \
+	  done
+	$(call clean-files,$<) 
+
+#	$(ECHO) " donot remove $< ..."
+#sed -e 's/^## \(.*\)[[:space:]]*{#\(.*\)}/section: [\1,\2]/g'
+#	$(SED) -e 's/\[@\([^]]*\)\]/{% cite \1%}/g' < $@ > $@.sed && \
+#	  $(call replace-if-different-and-remove,$@.sed,$@)
+
+#	$(QUIET)$(SED)  -e 's/\]\s*\[@/; @/g' < $@ > $@.sed && 
+
+.PHONY: run-jekyll 
+run-jekyll: $(htmlmulti_dep)  | $(htmlmuli_temp)/.jekyll_installed 
+	$(QUIET)$(call echo-build,$(JEKYLL),htmlmulti)
+	$(call clean-files,$(htmlmulti_mdh)) 
+	$(QUIET)cd $(htmlmuli_temp) && $(REAL_JEKYLL) build -d ../../$(CHUNKDIR) && cd -
+
+serve-jekyll:$(htmlmulti_dep)|$(htmlmuli_temp)/.jekyll_installed 
+	$(QUIET)$(call echo-build,$(JEKYLL),htmlmulti)
+	$(QUIET)cd $(htmlmuli_temp) && $(REAL_JEKYLL) serve && cd -
+#
+endif
 ################################################################################
 # CLEAN TARGETS
 #
