@@ -5,6 +5,7 @@ lang: en
 title: 'The thesis title'
 subtitle: 'with this subtitle'
 subject: 'the subject or description'
+author: 'Firstname Surname'
 authors:
   - name: 'Firstname Surname'
     ID: AnIdentifier
@@ -32,6 +33,27 @@ css_html:
   - css: 'assets/css/pandoc_thesis_print_html.css'
     media: 'print'
 
+js_cdn:
+  # See https://www.srihash.org for info on how to generate the hashes
+  -
+    url:       "//code.jquery.com/jquery-3.3.1.min.js"
+    hash:      "sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  -
+    url:       "//cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"
+    hash:      "sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ"
+  -
+    url:       "//stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+    hash:      "sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+
+css_cdn:
+  -
+    url:       "//use.fontawesome.com/releases/v5.3.1/css/all.css"
+    hash:      "sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU"
+    #v5.0.13 "sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp"
+  -
+    url:       "//cdn.rawgit.com/jpswalsh/academicons/master/css/academicons.min.css"
+    #hash:      "sha384-qpNsn9fNAkiBXwcwfxPTn1Ou6UU9P6pYGWQqLRIJOlPsAKOA+8XzN2coCnVnb8Fa"
+    
 ## LaTeX template variables
 colorlinks: true
 verbose: true
