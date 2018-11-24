@@ -2,7 +2,7 @@
 
 Another chapter with technical contents.
 
-## Navier-Stokes equation
+## Navier-Stokes equation {#sec:chapII:NS:equation}
 
 The Navier–Stokes momentum equation can be derived as a particular form of the Cauchy momentum equation, whose general convective form is \cite{constantin1988navier}: 
 
