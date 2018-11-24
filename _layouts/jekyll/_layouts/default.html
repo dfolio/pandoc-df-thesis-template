@@ -1,0 +1,131 @@
+---
+layout: default
+---
+<!DOCTYPE html>
+<html ⚡ lang="{{ lang | default: page.lang | default: site.lang | default: 'en'  }}">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,user-scalable=yes">
+  <title>
+{% if page.title == "Home" %}
+  {{ site.title }} &middot; {{ site.tagline }}
+{% else %}
+  {{ page.title }} &middot; {{ site.title }}
+{% endif %}
+  </title>
+  <meta name="author" content="{{page.author| default: site.data.variables.author}}">
+  <meta name="keywords" content="{{ page.keywords|  default: site.data.variables.keywords }}">
+  <meta name="description" content="{{ page.description|  default: site.data.variables.subject }}">
+  <link rel="canonical" href="{{ canonical| absolute_url }}">
+  {%- if paginator.previous_page -%}<link rel="prev" href="{{ paginator.previous_page_path | absolute_url }}">{%- endif -%}
+  {%- if paginator.next_page %}<link rel="next" href="{{ paginator.next_page_path | absolute_url }}">{%- endif -%}
+
+  <!-- CSS -->
+  {%- for cdn in site.data.variables.css_cdn -%}
+  <link rel="stylesheet" href="{{cdn.url}}"{%if cdn.hash %} integrity="{{cdn.hash}}" crossorigin="anonymous"{%endif%}>
+  {%-endfor-%}
+  
+  <!-- Custom css -->
+  <link rel="stylesheet" href="{{'/assets/css/pandoc_thesis_html.css'| relative_url}}"  media="all">
+  <link rel="stylesheet" href="{{'/assets/css/pandoc_thesis_print_html.css' | relative_url}}"  media="print">
+  {%- if layout.css.size>0 -%}
+  {%-for css in layout.css-%}
+  <link rel="stylesheet" href="{{ css | absolute_url}}">
+  {%- endfor -%}
+  {%- endif -%}
+  {%- if page.css.size>0 -%}
+  {%-for css in page.css-%}
+  <link rel="stylesheet" href="{{ css | absolute_url}}">
+  {%- endfor -%}
+  {%- endif -%}
+  {%- if page.style -%}
+  <style>
+  {{page.style}}
+  </style>
+  {%- endif -%}
+  <!-- JS -->
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "all" } }
+            // can use autonumber: 'AMS'
+    });
+  </script>
+  <script type="text/javascript"
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script>
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+  <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+  <![endif]-->
+
+</head>
+<body id="body">
+  {%- assign scripts = page.scripts | default: layout.scripts -%}
+  {%- if scripts -%}
+  <script>{%- for js in scripts -%}{{- js -}}{%- endfor -%}</script>
+  {%- endif -%}
+  {%- assign script = page.script | default: layout.script -%}
+  {%- if script -%}
+  <script>{{- script -}}</script>
+  {%- endif -%}
+  
+  <div class="container-fluid">
+    <div  class="clearfix container-fluid" id="content" role="main">
+      <div class="row flex-xl-nowrap">
+        <aside class="col-12 col-md-2 page-leftbar d-print-none">
+  <!-- TOC -->
+<nav class="nav-toc">
+  <h1><a class="sidebar-nav-item{% if page.url == site.baseurl %} active{% endif %}" href="{{ site.baseurl }}">Home</a> </h1>
+  {%-if contentsname -%}<h1>{{contentsname}}</h1>{%-endif -%}
+  <div class="toc-item">
+{% assign pages_list = site.pages %}
+  <ul>
+{%- for chapter in pages_list -%}
+  {%- if chapter.title != null -%}
+    {%- assign active = nil -%}
+    {%- if page.url == chapter.url -%}{%- assign active = 'active' -%}{%- endif -%}
+    <li{% unless active == nil %} class="{{ active }}"{% endunless %}>
+    <a class="nav-item {{ active }}" href="{{ site.baseurl }}{{ chapter.url | remove_first:'/' }}">{{ chapter.title }}</a>
+    {%- if active -%}
+      {%-capture section_list -%}
+      {%- for section in page.section -%}
+        {%-if section.ref -%}
+          <li><a href="#{{section.ref}}">{{section.title}}</a></li>
+        {%-elsif section -%}
+          <li><a href="#sec:{{ section | slugify}}">{{section}}</a></li>
+        {%- endif -%}
+      {%- endfor -%}
+      {%-endcapture%}
+      {%-if section_list -%}
+        <ul>
+        {{section_list}}
+        </ul>
+      {%- endif -%}
+    {%- endif -%}
+    </li>
+  {%- endif -%}
+{%- endfor -%}
+  </ul>
+  </div>
+</nav>
+        </aside>
+
+<main class="col-12 col-md-10 py-md-3 pl-md-5" >
+{{ content }}
+</main>
+
+      </div>
+    </div>
+    <div class="clearfix container-fluid" >
+      <footer class="navbar d-print-none site-footer">
+        footer will be here
+      </footer
+    </div>
+  </div>
+</body>
+</html>

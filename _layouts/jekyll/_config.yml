@@ -1,0 +1,47 @@
+# Welcome to Jekyll!
+#
+title: pandoc D'Folio thesis template        # Site title in default language
+description: This repository provides the D. Folio template for writing a thesis dissertation using Pandoc.
+author: dfolio
+email: dfolio@free.fr
+
+
+baseurl:  "" # the subpath of your site, e.g. /blog
+url:       "" # the base hostname & protocol for your site, e.g. http://example.com
+# Build settings
+markdown_ext: "markdown,mkdown,mkdn,mkd,md,mdh"
+markdown: Pandoc
+plugins:
+#  - jekyll-pandoc
+#  - jekyll-scholar
+  
+pandoc:
+  options:
+    - metadata-file: metadata.yml
+    - wrap: preserve
+    - top-level-division: chapter
+    - atx-header
+    - file-scope
+    - filter: pandoc-crossref
+    - filter: pandoc-citeproc
+    - csl: assets/bib/Thesis-ieee-style.csl
+    - bibliography: assets/bib/bibliography.bib
+    - default-image-extension: svg
+    - mathjax
+    - metadata: reference-section-title=References
+
+# Exclude from processing.
+# The following items will not be processed, by default. Create a custom list
+# to override the default setting.
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - mdx/
+  - '*.xml'
+  - '*.sed'
+  
