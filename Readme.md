@@ -3,7 +3,7 @@
 This repository provides the D. Folio template for writing a thesis dissertation using [Pandoc], <http://pandoc.org>. Based on a “modified” markdown sources, this thesis template can deal with many outputs dialect basically supported by [Pandoc]:
 
 - `pdf`: (**preferred**) output generated from (lua)[LaTeX];
-- `html`: single [HTML5] file for web-publications;
+- `html`: single (based solely on [Pandoc]) and multi (based on [Jekyl])  [HTML5] file for web-publications;
 - `epub`: [EPUB] v3 ebook;
 - `docbook5`: XML [DocBook] and HTML chunked files;
 - `odt`: LibreOffice/OpenOffice OpenDocument [ODT];
