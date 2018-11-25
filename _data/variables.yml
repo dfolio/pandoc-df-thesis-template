@@ -1,5 +1,6 @@
 ---
-#Global (pandoc) variables
+###############################################################################
+# SIMPLE CONFIGURATION 
 draft: true
 lang: en
 title: 'The thesis title'
@@ -21,6 +22,15 @@ author-meta: 'D. Folio'
 abstract: |
   This is the abstract.
 
+#
+# END SIMPLE CONFIGURATION
+################################################################################
+
+################################################################################
+# ADVANCED CONFIGURATION
+#
+
+## Global (pandoc) variables
 toc: true
 toc-depth: 3
 lof: true
