@@ -1,8 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{pandoc-thesis}[2018/10/10 \space v0.5\space Dfolio's pandoc-thesis package style]
+\ProvidesPackage{pandoc-df-thesis}[2018/10/10 \space v0.6\space Dfolio's pandoc-df-thesis template base package]
 
-\newdimen\ThesisZ \ThesisZ=0pt
+\newdimen\ThesisZ\ThesisZ=0pt
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \def\Thesisinfo#1{\ifverbose\GenericInfo{Thesis}{#1}\fi}
 \def\Thesiswarning#1{\PackageWarning{Thesis}{#1}}
@@ -106,8 +106,6 @@
   \renewcommand{\headrulewidth}{0.4pt}%
   \renewcommand{\footrulewidth}{0.5pt}%
 }
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Penalty %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -616,7 +614,6 @@
   %Print the glossary
   \printnoidxglossary[type=glg,style=altlist,title=\glossaryname,toctitle=\Thesisglossaryname]
 }
-
 
 %\renewcommand*{\glossarysection}[2][\@gls@title]{%
 %  \def\@gls@title{#2}%

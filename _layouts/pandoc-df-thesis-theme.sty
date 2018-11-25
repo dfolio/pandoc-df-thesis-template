@@ -1,6 +1,8 @@
 % $Id: 4bba9db12cfa96358ea34e23e2b6c97f5eae7b1f $
 % !TeX encoding = UTF-8
-% !TeX program = lualatex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{pandoc-df-thesis-style}[2018/11/25 \space v0.6\space Dfolio's pandoc thesis template theme package]
 
 % LaTeX styling (e.g. color/font) should be defined here
 
@@ -71,7 +73,6 @@
 \captionsetup{font={small}}
 
 %Lang
-
 \newcommand\latinfont[1]{{\em #1}}%
 \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
   \newcommand\frenchfont[1]{{#1}}

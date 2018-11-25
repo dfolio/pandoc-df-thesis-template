@@ -11,10 +11,10 @@ $endif$$endif$%
 \newif\ifpdf\pdftrue
 \ifx\pdfoutput\undefined\pdffalse\else\pdftrue\fi
 \ifpdf
-  \PackageInfo{\jobname}{Compiled \jobname with PDF}
+  \PackageInfo{\jobname}{Compiled \jobname{} with PDF}
   \ifpdf\usepackage[a-3u]{pdfx}\fi
 \else
-\GenericError{\jobname}{\jobname Error: no PDF output}
+\GenericError{\jobname}{\jobname{} Error: no PDF output}
   {Must be compiled with PDF output}
   {Sorry, \jobname must be compiled with PDF output}
 \fi
@@ -74,13 +74,14 @@ $endif$
 $if(sansfont)$
   \setsansfont[$for(sansfontoptions)$$sansfontoptions$$sep$,$endfor$]{$sansfont$}
 $else$
-  \setsansfont[
-    Path=../assets/fonts/,
-    BoldItalicFont=CALIBRIZ.TTF,
-    BoldFont      =CALIBRIB.TTF,
-    ItalicFont    =CALIBRII.TTF,
-    SlantedFont   =CALIBRILI.TTF
-  ]{calibri.otf}
+  \setsansfont{Calibri}
+%  \setsansfont[
+%    Path=../assets/fonts/,
+%    BoldItalicFont=CALIBRIZ.TTF,
+%    BoldFont      =CALIBRIB.TTF,
+%    ItalicFont    =CALIBRII.TTF,
+%    SlantedFont   =CALIBRILI.TTF
+%  ]{calibri.otf}
 $endif$
 $if(monofont)$
   \setmonofont[Mapping=tex-ansi$if(monofontoptions)$,$for(monofontoptions)$$monofontoptions$$sep$,$endfor$$endif$]{$monofont$}
@@ -125,31 +126,31 @@ $if(verbatim-in-note)$
 \usepackage{fancyvrb}
 $endif$
 \hypersetup{
-            psdextra,hyperindex=true,pagebackref,
-            hypertexnames=false,
-            pdfpagelabels=true,
-            bookmarks=true,
+  psdextra,hyperindex=true,pagebackref,
+  hypertexnames=false,
+  pdfpagelabels=true,
+  bookmarks=true,
 $if(lang)$
-            pdflang={$lang$},
+  pdflang={$lang$},
 $endif$
 $if(title-meta)$
-            pdftitle={$title-meta$},
+  pdftitle={$title-meta$},
 $endif$
 $if(author-meta)$
-            pdfauthor={$author-meta$},
+  pdfauthor={$author-meta$},
 $endif$
 $if(keywords)$
-            pdfkeywords={$for(keywords)$$keywords$$sep$, $endfor$},
+  pdfkeywords={$for(keywords)$$keywords$$sep$, $endfor$},
 $endif$
 $if(colorlinks)$
-            colorlinks=true,
-            linkcolor=$if(linkcolor)$$linkcolor$$else$DarkCyan$endif$,
-            citecolor=$if(citecolor)$$citecolor$$else$DarkGreen$endif$,
-            urlcolor=$if(urlcolor)$$urlcolor$$else$DarkBlue$endif$,
+  colorlinks=true,
+  linkcolor=$if(linkcolor)$$linkcolor$$else$DarkCyan$endif$,
+  citecolor=$if(citecolor)$$citecolor$$else$DarkGreen$endif$,
+  urlcolor=$if(urlcolor)$$urlcolor$$else$DarkBlue$endif$,
 $else$
-            pdfborder={0 0 0},
+  pdfborder={0 0 0},
 $endif$
-            breaklinks=true}
+  breaklinks=true}
 \urlstyle{same}  % don't use monospace font for urls
 $if(verbatim-in-note)$
 \VerbatimFootnotes % allows verbatim text in footnotes
@@ -263,13 +264,14 @@ $endif$
 \glsnoexpandfields
 $endif$
 
-\usepackage{../_layouts/pandoc-thesis}
+\usepackage{pandoc-df-thesis}
+\usepackage{pandoc-df-thesis-theme}
+\usepackage{pandoc-df-thesis-macros}
+
 $for(header-includes)$
 $header-includes$
 $endfor$
 \makeatletter
-\input{../_layouts/pandoc-thesis_styles.tex}
-\input{../_layouts/pandoc-thesis_macros.tex}
 $if(glossary)$
 \input{$glossary$}
 $endif$
