@@ -40,8 +40,11 @@ This repository provides the D. Folio template for writing a thesis dissertation
    ```{sh}
    $ git clone https://github.com/dfolio/pandoc-df-thesis-template.git
    ```
+4. Edit the `Makefile` (optional), and the `_data/variables.yml` (advised).
 
-4. Once you have written some elements in the “modified” markdown sources within the `_md/` folder with your preferred markdown editor (e.g. [Atom](https://atom.io), [Sublime](https://www.sublimetext.com/)…), from the root repository just try running:
+    >  **Note**: the basis metadata (title, authors,...) are defined in `_data/variables.yml`!
+
+5. Once you have written some elements in the sources directory:  `_md/`, with your preferred markdown editor (e.g. [Atom](https://atom.io) (recommended), [Sublime](https://www.sublimetext.com/)…), from the root repository just try running:
 
    ```{sh}
    $ make <target>
@@ -54,19 +57,30 @@ This repository provides the D. Folio template for writing a thesis dissertation
 The template is organized as follows:
 
 - `README.md`: these instructions;
+
 - `License`: terms of reuse (CC-By-4.0 license);
-- `Makefile`: contains instructions for building the thesis output based on [Pandoc] framework.\
+
+- `Makefile`: contains instructions for building the thesis output based on [Pandoc] framework.
+
    You may need to modify this `Makefile` to fit your needs;
-- `_data/`: auxiliary information on/for the thesis;
+
+- `_data/`: auxiliary information on/for the thesis
+
+   > Note: the basis metadata (title, authors,...) are defined in `_data/variables.yml`!;
+
 - `_layouts/`: where is stored the modified [Pandoc] template;
+
 - `_md/`: the (modified) markdown sources of the dissertation;
-- `_sass/`: these are [SASS] partials that can be imported into your `.scss` file swhich will then be processed into [CSS](https://www.w3schools.com/css/) styles that define the styles to be used for `html`, `epub` and `docbook5`.
-- `assets/`: the materials of the thesis (e.g. figures, bibliographies) or things planed to be published with the thesis;
-  **Note**: the publishable stuffs are now in `build/assets`!
+
+- `_sass/`: these are [SASS] partials that can be imported into your `assets/scss/` files which will then be processed into [CSS](https://www.w3schools.com/css/) styles that define the styles to be used for `html`, `epub` and `docbook5`.
+
+- `assets/`: the materials of the thesis (e.g. figures, bibliographies, css, fonts) or things planed to be published with the thesis;
+
+  > **Note**: the publishable stuffs are now in `build/assets`! while the root `assets/` folder is intended to contains the necessary materials that are used to generate the publishable things.
 
 Once a `make <target>` is performed, the following folders should appear:
 
-- `build/`: all build stuff and mandatory materials are generated/copied in this folder. 
+- `build/`: all built stuff and mandatory materials are generated/copied in this folder. 
 
   - `build/<MAIN_DOC_BASENAME>.<target>`: the single file targets, e.g. when targets are `pdf`, `epub`, `docx`, `odt`.
 
@@ -91,9 +105,9 @@ Once a `make <target>` is performed, the following folders should appear:
 The (modified) markdown sources of your dissertation should be placed in the
 `_md/` directory. The following rules are considered:
 
-- `0X_filename.md`: with `X` a digit, considered as contents 'front matter' of the dissertation to be placed before the mainmatter, such as  “Title page”, “Preface”, “Acknowledgment”…;
-- `[1-8]X_filename.md`: the main matter contents, classically split in parts, chapters and/or sections;
-- `9X_filename.md`: with `X` a digit, considered as contents 'back matter' to be placed after the main matter, e.g. “Epilogue”, “References”, “Glossaries”…;
+- `0X_filename.md`: with `X` a digit, considered as contents 'front matter' of the dissertation to be placed before the main-matter, such as  “Title page”, “Preface”, “Acknowledgment”…;
+- `[1-8]X_filename.md`: the main-matter contents, classically split in parts, chapters and/or sections;
+- `9X_filename.md`: with `X` a digit, considered as contents 'back-matter' to be placed after the main matter, e.g. “Epilogue”, “References”, “Glossaries”…;
 
 If you have a very _big_ dissertation/book, you may have more than one `X` digit, but it is important to be consistent for all the filenames' definition.
 
@@ -105,13 +119,16 @@ If you have a very _big_ dissertation/book, you may have more than one `X` digit
 
 In the `_data/` directory are placed auxiliary data for your documents:
 
-- `_data/metadata.yml`: metadata for [Pandoc] and its filter (e.g. pandoc-citeproc and pandoc-crossref); \
-    **Notes**: as stated in [Pandoc] documentation metadata values specified inside the document, or from the commandline overwrite values specified with this file!
+- `_data/metadata.yml`: metadata for [Pandoc] and its filter (e.g. pandoc-citeproc and pandoc-crossref); 
 
-- `_data/variables.yml`: variable definition used by our [Pandoc] templates; \
-    **Notes**: as stated in [Pandoc] documentation the command line option overwrite values specified with this file!
+    > **Notes**: as stated in [Pandoc] documentation metadata values specified inside the document, or from the commandline overwrite values specified with this file!
+
+- `_data/variables.yml`: variable definition used by our [Pandoc] templates; 
+
+    > **Notes**: as stated in [Pandoc] documentation the command line option overwrite values specified with this file!
 
 - `_data/macros.pp`: the main [PP]-macros that imports all other macros' definition files w.r.t. the dialect target:
+
     - `_data/latex.pp`: macros for [LaTeX] and then for the `pdf` target;
     - `_data/html.pp`: macros for [HTML5];
     - `_data/docbook.pp`: macros for [DocBook];
@@ -131,7 +148,7 @@ Let's remember that the final PDF file is build from (Lua)[LaTeX] and placed in 
 
 ### `assets/`
 
-The role of the `assets/` folder is twofold:
+The role of the `assets` folders is twofold:
 
 1. To be the place where _publishable_ materials can be stored, such as
    - `assets/bib/`: for the BibTeX bibliography files;
@@ -154,3 +171,4 @@ Obviously, some elements could be placed elsewhere (e.g. in `_data/` folder), bu
 [pp]: https://cdsoft.fr/pp/
 [Jekyll]: https://jekyllrb.com/
 [SASS]: https://github.com/sass/ruby-sass
+
