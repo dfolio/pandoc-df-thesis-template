@@ -317,6 +317,9 @@ $endif$
 $for(include-before)$
 $include-before$
 $endfor$
+$for(frontmatter)$
+\include{$frontmatter$}
+$endfor$
 
 $if(toc)$
 {
@@ -334,6 +337,12 @@ $if(lof)$
 \listoffigures
 $endif$
 
+\clearemptydoublepage
+$if(glossary)$
+% GLOSSARIES -------------------------------------------------------------------
+\Glossaries
+$endif$
+
 % ------------------------------------------------------------------------------
 % MAINMATER --------------------------------------------------------------------
 \mainmatter
@@ -346,7 +355,6 @@ $body$
 % ------------------------------------------------------------------------------
 % BACKMATTER--------------------------------------------------------------------
 \backmatter
-
 
 $if(biblatex)$
 \printbibliography$if(biblio-title)$[title=$biblio-title$]$endif$
@@ -369,20 +377,20 @@ $for(include-after)$
 $include-after$
 $endfor$
 
-\clearemptydoublepage
-$if(glossary)$
-% GLOSSARIES -------------------------------------------------------------------
-\Glossaries
-$endif$
+$for(backmatter)$
+\include{$backmatter$}
+$endfor$
 
 
+% END OF DISSERTATION
 \clearemptydoublepage
+
+$if(abstract)$
+\begin{abstract}
+$abstract$
+\end{abstract}
+$else$
 \hbox{}\pagestyle{empty}
-
-% $if(abstract)$
-% \begin{abstract}
-% $abstract$
-% \end{abstract}
-% $endif$
+$endif$
 
 \end{document}
