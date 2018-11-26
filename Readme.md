@@ -54,7 +54,15 @@ This repository provides the D. Folio template for writing a thesis dissertation
 
    where `<target>` is one of the above output dialect (i.e. `pdf`, `html`, `epub`…)
 
+   ```{sh}
+   $ make help
+   ```
+   
+   provides some _help_ on the other targets. 
+
 Further informations on the directories organization are given in the [wiki](https://github.com/dfolio/pandoc-df-thesis-template/wiki) [How To?](https://github.com/dfolio/pandoc-df-thesis-template/wiki/How-To%3F) page.
+
+
 
 [Pandoc]: http://pandoc.org
 [LaTeX]: http://www.latex-project.org/
