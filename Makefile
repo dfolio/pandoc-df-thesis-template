@@ -93,6 +93,12 @@ INDIR       ?=$(MDDIR)
 OUTDIR      ?= build
 
 ROOTDIR     := $(PWD)
+
+# Name use for distribution/archive, ie. used for 
+#  make dist 
+#
+DISTNAME    ?=$(notdir $(PWD))
+
 # Subdirs 
 # where all templates are stored
 TEMPLATEDIR ?=_layouts
@@ -242,24 +248,19 @@ TPUT      ?= tput
 # == Figures Generation
 ASYMPTOTE ?= asy
 CONVERT   ?= convert      # ImageMagick
-DOT       ?= dot          # GraphViz
-DOT2TEX   ?= dot2tex      # dot2tex - add options (not -o) as needed
-GNUPLOT   ?= gnuplot      # GNUplot
 INKSCAPE  ?= inkscape -z  # Inkscape (svg support)
-POTRACE   ?= potrace      # Inkscape (svg support)
-SVGO      ?= svgo
-SCOUR     ?= scour
+SVGO      ?= svgo         # SVG optimizer/minification
+SCOUR     ?= scour        # SVG optimizer/minification
 # == Usefull external program 
-GUNZIP    ?= gunzip       # GZipped file
-NPM       ?= npm
-RUBY      ?= ruby
+TAR       ?= tar          # To make archive
+ZIP       ?= zip
+NPM       ?= npm          # Install node_modules/<modules>
+RUBY      ?= ruby         # 
 GEM       ?= gem
 BUNDLE    ?= bundle
 JEKYLL    ?= jekyll
 SASS      ?= $(NODEDIR)/.bin/sass
 RSYNC     ?= rsync 
-TAR       ?= tar          # To make archive
-UNZIP     ?= unzip -q
 XSLTPROC  ?= xsltproc
 
 # This ensures that even when echo is a shell builtin, we still use the binary
@@ -356,7 +357,6 @@ ifeq "$(strip $(TEX_BIB_STRATEGY))" "natbib"
 PANDOC_TEX_BIB_FLAGS  += --natbib
 endif
 
-
 ## Options for LaTeX output
 PANDOC_TEX_FLAGS  ?= --file-scope -standalone\
   --pdf-engine=$(BUILD_TEX_STRATEGY) \
@@ -417,6 +417,193 @@ else
 this_file  := $(wildcard GNUmakefile makefile Makefile)
 endif
 
+###############################################################################
+# Utility Functions and Definitions
+#
+
+# Characters that are hard to specify in certain places
+space    := $(empty) $(empty)
+colon    := \:
+comma    := ,
+
+# Useful shell definitions
+sh_true  := :
+sh_false := ! :
+
+# Clear out the standard interfering make suffixes
+.SUFFIXES:
+
+# Turn off forceful rm (RM is usually mapped to rm -f)
+ifdef SAFE_RM
+RM  := rm
+endif
+
+# Don't call this directly - it is here to avoid calling wildcard more than
+# once in remove-files.
+remove-files-helper = $(if $1,$(RM) $1,$(sh_true))
+
+# $(call remove-files,source destination)
+remove-files        = $(call remove-files-helper,$(wildcard $1))
+
+# Removes all cleanable files in the given list
+# $(call clean-files,source destination file3 ...)
+# Works exactly like remove-files, but filters out files in $(neverclean)
+clean-files    = \
+  $(if $VERBOSE, $(echo_dt) "$(C_WARNING) Clean files '$(wildcard $1)' $(C_RESET)",); \
+  $(call remove-files,$(call cleanable-files,$(wildcard $1)))
+
+# $(call remove-temporary-files,filenames)
+remove-temporary-files  = $(if $(KEEP_TEMP),:,$(call clean-files,$1))
+
+# Test that a file exists
+# $(call test-exists,file)
+test-exists    = [ -e '$1' ]
+# $(call test-not-exists,file)
+test-not-exists   = [ ! -e '$1' ]
+
+# Note that $(DIFF) returns success when the files are the SAME....
+# $(call test-different,source,destination)
+test-different            = ! $(DIFF) -q '$1' '$2' >/dev/null 2>&1
+test-exists-and-different  = $(call test-exists,$2) && $(call test-different,$1,$2)
+
+# $(call move-files,source,destination)
+move-if-exists            = $(call test-exists,$1) && $(MV) '$(strip $1)' '$(strip $2)'
+
+# Use RSYNC instead of simple CP to allow remote copying 
+USE_RSYNC := $(if $(shell $(WHICH) $(RSYNC) 2>/dev/null),yes,)
+define copy-helper
+$(if $(USE_RSYNC),\
+  $(RSYNC) $(RSYNC_FLAGS) '$(strip $1)' '$(strip $2)',\
+  $(CP) '$(strip $1)' '$(strip $2)' )
+endef
+
+# Copy source to destination only if source exist 
+define copy-if-exists  
+$(call test-exists,$1) && $(call copy-helper,$1,$2) || \
+  $(call echo-error, " '$1' does not exist and cannot be copied to '$2'")
+endef
+
+# Copy source to destination only if they are different
+# $(call copy-if-different,source,destination)
+copy-if-different  = $(call test-different,$1,$2) && $(call copy-helper,$1,$2)
+
+# Move source to destination only if file 
+move-if-different  = $(call test-different,$1,$2) && $(MV) '$(strip $1)' '$(strip $2)'
+
+# Replace destination by source only if they are different, and remove source
+# $(call replace-if-different-and-remove,source,destination)
+define replace-if-different-and-remove
+$(call test-different,$1,$2) && $(MV) '$(strip $1)' '$(strip $2)' || \
+  $(call remove-files,'$(strip $1)')
+endef
+
+define replace-temporary-if-different-and-remove
+ $(if $(KEEP_TEMP),:,$(call replace-if-different-and-remove, $1,$2))
+endef
+
+# Return value 1, or value 2 if value 1 is empty
+# $(call get-default,<possibly empty arg>,<default value if empty>)
+get-default  = $(if $1,$1,$2)
+# Utility function for creating larger lists of files
+# $(call concat-files,suffixes,[prefix])
+concat-files  = $(foreach s,$1,$($(if $2,$2_,)files.$s))
+
+# Utility function for obtaining all files not specified in $(neverclean)
+# $(call cleanable-files,source destination file3 ...)
+# Returns the list of files that is not in $(wildcard $(neverclean))
+cleanable-files = $(filter-out $(wildcard $(neverclean)), $1)
+
+# Find files
+# $(call find-files,in_dir,with_pattern)
+define find-files
+$(FIND) $1 -name $2 -type f -prune  -print| $(SORT) | $(UNIQ)
+endef
+
+# Terminal color definitions
+REAL_TPUT := $(if $(NO_COLOR),,$(shell $(WHICH) $(TPUT)))
+
+# $(call get-term-code,codeinfo)
+# e.g.,
+# $(call get-term-code,setaf 0)
+get-term-code = $(if $(REAL_TPUT),$(shell $(REAL_TPUT) $1),)
+
+black   := $(call get-term-code,setaf 0)
+red     := $(call get-term-code,setaf 1)
+green   := $(call get-term-code,setaf 2)
+yellow  := $(call get-term-code,setaf 3)
+blue    := $(call get-term-code,setaf 4)
+magenta := $(call get-term-code,setaf 5)
+cyan    := $(call get-term-code,setaf 6)
+white   := $(call get-term-code,setaf 7)
+bold    := $(call get-term-code,bold)
+uline   := $(call get-term-code,smul)
+reset   := $(call get-term-code,sgr0)
+
+#
+# User-settable definitions
+#
+MSG_COLOR_WARNING   ?= magenta
+MSG_COLOR_CLEAN     ?= magenta
+MSG_COLOR_DISTCLEAN ?= magenta bold
+MSG_COLOR_ERROR     ?= red
+MSG_COLOR_INFO      ?= green
+MSG_COLOR_UNDERFULL ?= magenta
+MSG_COLOR_OVERFULL  ?= red bold
+MSG_COLOR_PAGES     ?= bold
+MSG_COLOR_BUILD     ?= cyan
+MSG_COLOR_RUN       ?= cyan bold
+MSG_COLOR_GRAPHIC   ?= yellow
+MSG_COLOR_DEP       ?= green
+MSG_COLOR_SUCCESS   ?= green bold
+MSG_COLOR_FAILURE   ?= red bold
+
+# Gets the real color from a simple textual definition like those above
+# $(call get-color,ALL_CAPS_COLOR_NAME)
+# e.g., $(call get-color,WARNING)
+get-color  = $(subst $(space),,$(foreach c,$(MSG_COLOR_$1),$($c)))
+
+#
+# STANDARD COLORS
+#
+C_WARNING   := $(call get-color,WARNING)
+C_ERROR     := $(call get-color,ERROR)
+C_INFO      := $(call get-color,INFO)
+C_UNDERFULL := $(call get-color,UNDERFULL)
+C_OVERFULL  := $(call get-color,OVERFULL)
+C_PAGES     := $(call get-color,PAGES)
+C_BUILD     := $(call get-color,BUILD)
+C_RUN       := $(call get-color,RUN)
+C_GRAPHIC   := $(call get-color,GRAPHIC)
+C_DEP       := $(call get-color,DEP)
+C_SUCCESS   := $(call get-color,SUCCESS)
+C_FAILURE   := $(call get-color,FAILURE)
+C_CLEAN     := $(call get-color,CLEAN)
+C_DISTCLEAN := $(call get-color,DISTCLEAN)
+C_RESET     := $(reset)
+
+get_date_time   = $(DATE) +"%F %T"
+
+# Display information about what is being done
+echo_dt       = $(ECHO) "$(shell $(get_date_time) )"
+# $(call echo-build,<input file>,<output file>,[<run number>])
+echo-build    = $(echo_dt) "$(C_BUILD)**Build** $1 --> $2$(if $3, ($3),)...$(C_RESET)"
+echo-run      = $(echo_dt) "$(C_RUN)**Run $1** $(if $2, $2 $(if $3, --> $3,),)...$(C_RESET)"
+echo-graphic  = $(echo_dt) "$(C_GRAPHIC)**Figure** $1 --> $2$(C_RESET)"
+echo-dep      = $(echo_dt) "$(C_DEP)**Deps** $1 --> $2$(C_RESET)"
+echo-error    = $(echo_dt) "$(C_ERROR)**ERROR** $1 $(C_RESET)"
+echo-failure  = $(echo_dt) "$(C_ERROR)**FAILED** $1 $(C_RESET)"
+echo-warning  = $(echo_dt) "$(C_WARNING)**WARNING** $1 $(C_RESET)"
+
+# Display a list of something
+# $(call echo-list,<values>)
+echo-list  = for x in $1; do $(ECHO) "$$x"; done
+
+define echo-end-target
+$(call test-exists,$1)&& \
+  $(echo_dt) "$(C_SUCCESS) Successfully generated $1$(C_RESET)" ||\
+  $(echo_dt) "$(C_FAILURE) Fail to generate $1!!!$(C_RESET)" 
+endef
+
 #
 # EXTERNAL PROGRAM DOCUMENTATION SCRIPT
 #
@@ -439,9 +626,6 @@ define output-all-programs
     $(this_file) $(if $1,> '$1',) || \
   $(ECHO) "Cannot determine the name of this makefile."
 endef
-# If they misspell gray, it should still work.
-GRAY  ?= $(call get-default,$(GREY),)
-
 
 # LaTeX invocations
 #
@@ -632,208 +816,34 @@ ifeq "$(strip $(BUILD_BIB_STRATEGY))" "" # by default "bibtex"
 run-bibtex  = $(call echo-run,$(BIBTEX),$1); $(BIBTEX) $1 | $(color_bib)
 endif
 
-
-###############################################################################
-# Utility Functions and Definitions
+# Figures conversion 
 #
+# If they misspell gray, it should still work.
+GRAY	?= $(call get-default,$(GREY),)
 
-
-# Turn off forceful rm (RM is usually mapped to rm -f)
-ifdef SAFE_RM
-RM  := rm
-endif
-
-# Don't call this directly - it is here to avoid calling wildcard more than
-# once in remove-files.
-remove-files-helper = $(if $1,$(RM) $1,$(sh_true))
-
-# $(call remove-files,source destination)
-remove-files        = $(call remove-files-helper,$(wildcard $1))
-
-# Removes all cleanable files in the given list
-# $(call clean-files,source destination file3 ...)
-# Works exactly like remove-files, but filters out files in $(neverclean)
-clean-files    = \
-  $(if $VERBOSE, $(echo_dt) "$(C_WARNING) Clean files '$(wildcard $1)' $(C_RESET)",); \
-  $(call remove-files,$(call cleanable-files,$(wildcard $1)))
-
-# $(call remove-temporary-files,filenames)
-remove-temporary-files  = $(if $(KEEP_TEMP),:,$(call clean-files,$1))
-
-# Test that a file exists
-# $(call test-exists,file)
-test-exists    = [ -e '$1' ]
-# $(call test-not-exists,file)
-test-not-exists   = [ ! -e '$1' ]
-
-# Note that $(DIFF) returns success when the files are the SAME....
-# $(call test-different,source,destination)
-test-different            = ! $(DIFF) -q '$1' '$2' >/dev/null 2>&1
-test-exists-and-different  = $(call test-exists,$2) && $(call test-different,$1,$2)
-
-# $(call move-files,source,destination)
-move-if-exists            = $(call test-exists,$1) && $(MV) '$1' '$2'
-
-# Use RSYNC instead of simple CP to allow remote copying 
-USE_RSYNC := $(if $(shell $(WHICH) $(RSYNC) 2>/dev/null),yes,)
-define copy-helper
-$(if $(USE_RSYNC),\
-  $(RSYNC) $(RSYNC_FLAGS) '$1' '$2',\
-  $(CP) '$1' '$2')
-endef
-
-# Copy source to destination only if source exist 
-define copy-if-exists  
-$(call test-exists,$1) && $(call copy-helper,$1,$2) || \
-  $(call echo-error, " '$1' does not exist and cannot be copied to '$2'")
-endef
-
-# Copy source to destination only if they are different
-# $(call copy-if-different,source,destination)
-copy-if-different  = $(call test-different,$1,$2) && $(call copy-helper,$1,$2)
-
-# Move source to destination only if file 
-move-if-different  = $(call test-different,$1,$2) && $(MV) '$1' '$2'
-
-# Replace destination by source only if they are different, and remove source
-# $(call replace-if-different-and-remove,source,destination)
-define replace-if-different-and-remove
-$(call test-different,$1,$2) && $(MV) '$(strip $1)' '$(strip $2)' || \
-  $(call remove-files,'$(strip $1)')
-endef
-
-define replace-temporary-if-different-and-remove
- $(if $(KEEP_TEMP),:,$(call replace-if-different-and-remove, $1,$2))
-endef
-
-# Return value 1, or value 2 if value 1 is empty
-# $(call get-default,<possibly empty arg>,<default value if empty>)
-get-default  = $(if $1,$1,$2)
-# Utility function for creating larger lists of files
-# $(call concat-files,suffixes,[prefix])
-concat-files  = $(foreach s,$1,$($(if $2,$2_,)files.$s))
-
-# Utility function for obtaining all files not specified in $(neverclean)
-# $(call cleanable-files,source destination file3 ...)
-# Returns the list of files that is not in $(wildcard $(neverclean))
-cleanable-files = $(filter-out $(wildcard $(neverclean)), $1)
-
-# Find files
-# $(call find-files,in_dir,with_pattern)
-define find-files
-$(FIND) $1 -name $2 -type f -prune  -print| $(SORT) | $(UNIQ)
-endef
-
-# Gives a reassuring message about the failure to find include files
-# $(call include-message,<list of include files>)
-define include-message
-$(strip \
-$(if $(filter-out $(wildcard $1),$1),\
-  $(shell $(echo_dt) \
-  "$(C_INFO)NOTE: You may ignore warnings about the following files:" >&2;\
-  $(ECHO) >&2; \
-  $(foreach s,$(filter-out $(wildcard $1),$1),$(ECHO) '     $s' >&2;)\
-  $(ECHO) "$(C_RESET)" >&2)
-))
-endef
-
-# Characters that are hard to specify in certain places
-space    := $(empty) $(empty)
-colon    := \:
-comma    := ,
-
-# Useful shell definitions
-sh_true  := :
-sh_false := ! :
-
-# Clear out the standard interfering make suffixes
-.SUFFIXES:
-
-
-# Terminal color definitions
-REAL_TPUT := $(if $(NO_COLOR),,$(shell $(WHICH) $(TPUT)))
-
-# $(call get-term-code,codeinfo)
-# e.g.,
-# $(call get-term-code,setaf 0)
-get-term-code = $(if $(REAL_TPUT),$(shell $(REAL_TPUT) $1),)
-
-black   := $(call get-term-code,setaf 0)
-red     := $(call get-term-code,setaf 1)
-green   := $(call get-term-code,setaf 2)
-yellow  := $(call get-term-code,setaf 3)
-blue    := $(call get-term-code,setaf 4)
-magenta := $(call get-term-code,setaf 5)
-cyan    := $(call get-term-code,setaf 6)
-white   := $(call get-term-code,setaf 7)
-bold    := $(call get-term-code,bold)
-uline   := $(call get-term-code,smul)
-reset   := $(call get-term-code,sgr0)
-
+# Creation from  raw image, .jpg/.jpeg/.png/.tif/etc. files
 #
-# User-settable definitions
-#
-MSG_COLOR_WARNING   ?= magenta
-MSG_COLOR_CLEAN     ?= magenta
-MSG_COLOR_DISTCLEAN ?= magenta bold
-MSG_COLOR_ERROR     ?= red
-MSG_COLOR_INFO      ?= green
-MSG_COLOR_UNDERFULL ?= magenta
-MSG_COLOR_OVERFULL  ?= red bold
-MSG_COLOR_PAGES     ?= bold
-MSG_COLOR_BUILD     ?= cyan
-MSG_COLOR_RUN       ?= cyan bold
-MSG_COLOR_GRAPHIC   ?= yellow
-MSG_COLOR_DEP       ?= green
-MSG_COLOR_SUCCESS   ?= green bold
-MSG_COLOR_FAILURE   ?= red bold
-
-# Gets the real color from a simple textual definition like those above
-# $(call get-color,ALL_CAPS_COLOR_NAME)
-# e.g., $(call get-color,WARNING)
-get-color  = $(subst $(space),,$(foreach c,$(MSG_COLOR_$1),$($c)))
-
-#
-# STANDARD COLORS
-#
-C_WARNING   := $(call get-color,WARNING)
-C_ERROR     := $(call get-color,ERROR)
-C_INFO      := $(call get-color,INFO)
-C_UNDERFULL := $(call get-color,UNDERFULL)
-C_OVERFULL  := $(call get-color,OVERFULL)
-C_PAGES     := $(call get-color,PAGES)
-C_BUILD     := $(call get-color,BUILD)
-C_RUN       := $(call get-color,RUN)
-C_GRAPHIC   := $(call get-color,GRAPHIC)
-C_DEP       := $(call get-color,DEP)
-C_SUCCESS   := $(call get-color,SUCCESS)
-C_FAILURE   := $(call get-color,FAILURE)
-C_CLEAN     := $(call get-color,CLEAN)
-C_DISTCLEAN := $(call get-color,DISTCLEAN)
-C_RESET     := $(reset)
-
-get_date_time   = $(DATE) +"%F %T"
-
-# Display information about what is being done
-echo_dt       = $(ECHO) "$(shell $(get_date_time) )"
-# $(call echo-build,<input file>,<output file>,[<run number>])
-echo-build    = $(echo_dt) "$(C_BUILD)**Build** $1 --> $2$(if $3, ($3),)...$(C_RESET)"
-echo-run      = $(echo_dt) "$(C_RUN)**Run $1** $(if $2, $2 $(if $3, --> $3,),)...$(C_RESET)"
-echo-graphic  = $(echo_dt) "$(C_GRAPHIC)**Figure** $1 --> $2$(C_RESET)"
-echo-dep      = $(echo_dt) "$(C_DEP)**Deps** $1 --> $2$(C_RESET)"
-echo-error    = $(echo_dt) "$(C_ERROR)**ERROR** $1 $(C_RESET)"
-echo-failure  = $(echo_dt) "$(C_ERROR)**FAILED** $1 $(C_RESET)"
-echo-warning  = $(echo_dt) "$(C_WARNING)**WARNING** $1 $(C_RESET)"
-
-# Display a list of something
-# $(call echo-list,<values>)
-echo-list  = for x in $1; do $(ECHO) "$$x"; done
-
-define echo-end-target
-$(call test-exists,$1)&& \
-  $(echo_dt) "$(C_SUCCESS) Successfully generated $1$(C_RESET)" ||\
-  $(echo_dt) "$(C_FAILURE) Fail to generate $1!!!$(C_RESET)" 
+# $(call convert-raw,<raw>,<out_fig>, $(GRAY))
+define convert-raw
+$(CONVERT) '$(strip $1)' $(if $(filter-out ,$3$(GRAY)),-type Grayscale,) '$(strip $2)'
 endef
+
+define get-inkscape-export
+--export-$(strip $(if $(filter %.pdf,$1),pdf,$(if $(filter %.emf,$1),emf,$(if $(filter %.eps,$1),eps,\
+$(if $(filter %.svg,$1),plain-svg,\
+$(error "$(C_ERROR)Unsupported $(INKSCAPE) export '$1'$(C_RESET)"))))))
+endef
+INKSCAPE_FLAGS  +=--vacuum-defs --export-area-page
+# Creation from  raw image, .jpg/.jpeg/.png/.tif/etc. files
+#
+# $(call convert-svg,<svg>,<out_fig>, $(GRAY))
+define convert-svg
+$(INKSCAPE) $(INKSCAPE_FLAGS) '$(strip $1)' $(call get-inkscape-export,$2)='$(strip $2)'
+endef
+#
+tt:
+	$(ECHO) "$(call convert-svg,Clnavier.svg,Clnavier.svg)"
+
 ###############################################################################
 # VARIABLE DECLARATIONS
 #
@@ -951,7 +961,7 @@ endif
 # clean
 clean_subdirs       += $(MDDIR) $(DATADIR) $(BIBDIR) $(FIGDIR) $(HTMLDIR) $(TEXDIR) 
 clean_patterns      += *~ *.bak
-clean_files         += $(foreach d,$(clean_subdirs),$(addprefix $(d)/,$(clean_patterns))) $(BIB)
+clean_files         += $(foreach d,. $(clean_subdirs),$(addprefix $(d)/,$(clean_patterns))) $(BIB)
 clean_css_files     += $(files_css)
 clean_fig           += $(fig_svg) $(fig_pdf) $(fig_png) $(fig_emf)
 clean_mdt_files     += $(files_mdt)
@@ -1183,11 +1193,6 @@ endif
 		exit 1; \
 	fi;
 
-
-tt:
-	$(ECHO) " foooo run-bibtex" $(call run-bibtex,$(TEXDIR)/$(MAIN_DOC_BASENAME).tex)
-
-
 #.INTERMEDIATE: $(files_mdt)
 $(MDTDIR)/%.mdt:$(MDDIR)/%.md
 	$(QUIET)$(call echo-run,$(PANDOC),$<,$@)
@@ -1271,38 +1276,44 @@ bootstrap:$(NODEDIR)/bootstrap
 #
 .PHONY: svg
 svg:$(fig_svg) $(OUT_FIGDIR)
-$(FIGDIR)/%.svg:$(MEDIADIR)/%.svg
+$(OUT_FIGDIR)/%.svg:$(MEDIADIR)/%.svg
 	$(QUIET)$(call echo-graphic,$^,$<,$@)
-	$(QUIET)$(INKSCAPE) --vacuum-defs --export-area-page --export-plain-svg=$@ $<
+	$(QUIET)$(call convert-svg,$<,$@)
 ifeq "$(if $(shell $(WHICH) $(SVGO) 2>/dev/null),1,)" "1"
 	$(QUIET)$(SVGO) --enable={cleanupIDs,collapseGroups,removeUnusedNS,removeUselessStrokeAndFill,removeUselessDefs,removeComments,removeMetadata,removeEmptyAttrs,removeEmptyContainers} $@
+endif
+ifeq "$(if $(shell $(WHICH) $(SCOUR) 2>/dev/null),1,)" "1"
+	$(QUIET)$(SCOUR) --enable-viewboxing --enable-id-stripping \
+		--enable-comment-stripping --shorten-ids --indent=none \
+		-i $@ -o $@o 
+	 $(call replace-temporary-if-different-and-remove,$@o,$@)
 endif
 
 $(OUT_FIGDIR)/%.svg:$(MEDIADIR)/%.png
 	$(QUIET)$(call echo-graphic,$^,$@)
-	$(QUIET)$(CONVERT) $< $@
+	$(QUIET)$(call convert-raw,$<,$@,$(GRAY))
 $(OUT_FIGDIR)/%.svg:$(MEDIADIR)/%.jpg
 	$(QUIET)$(call echo-graphic,$^,$@)
-	$(QUIET)$(CONVERT) $< $@
+	$(QUIET)$(call convert-raw,$<,$@,$(GRAY))
 $(OUT_FIGDIR)/%.svg:$(MEDIADIR)/%.tif
 	$(QUIET)$(call echo-graphic,$^,$@)
-	$(QUIET)$(CONVERT) $< $@
+	$(QUIET)$(call convert-raw,$<,$@,$(GRAY))
 
 $(OUT_FIGDIR)/%.pdf:$(MEDIADIR)/%.svg
 	$(QUIET)$(call echo-graphic,$^,$@)
-	$(QUIET)$(INKSCAPE) --vacuum-defs --export-area-page --export-pdf=$@ $<
+	$(QUIET)$(call convert-svg,$<,$@)
 	
 $(OUT_FIGDIR)/%.pdf:$(OUT_FIGDIR)/%.svg
 	$(QUIET)$(call echo-graphic,$^,$@)
-	$(QUIET)$(INKSCAPE) --vacuum-defs --export-area-page --export-pdf=$@ $<
+	$(QUIET)$(call convert-svg,$<,$@)
 	
 $(OUT_FIGDIR)/%.emf:$(MEDIADIR)/%.svg
 	$(QUIET)$(call echo-graphic,$^,$@)
-	$(QUIET)$(INKSCAPE) --vacuum-defs --export-area-page --export-emf=$@ $<
+	$(QUIET)$(call convert-svg,$<,$@)
 	
 $(OUT_FIGDIR)/%.emf:$(OUT_FIGDIR)/%.svg
 	$(QUIET)$(call echo-graphic,$^,$@)
-	$(QUIET)$(INKSCAPE) --vacuum-defs --export-area-page --export-emf=$@ $<
+	$(QUIET)$(call convert-svg,$<,$@)
 
 ################################################################################
 # PREPARE TARGETS
@@ -1445,47 +1456,67 @@ endif
 # CLEAN TARGETS
 #
 .PHONY: clean-all clean-html
-clean-all: clean-files clean-aux clean-bib clean-mdt clean-mdh clean-html clean-css clean-fig 
+clean: clean-files clean-aux clean-bib clean-mdt clean-mdh clean-css clean-fig ;
 clean-files:
 	$(QUIET)$(echo_dt) "$(C_WARNING) Cleaning unnecessary documents...$(C_RESET)"
-	$(call clean-files, $(clean_files))
+	$(call clean-files,$(clean_files))
 
 clean-aux:
 	$(QUIET)$(echo_dt) "$(C_WARNING) Cleaning LaTeX intermediates...$(C_RESET)"
-	$(call clean-files, $(clean_tex_aux_files))
+	$(call clean-files,$(clean_tex_aux_files))
 clean-bib:
 	$(QUIET)$(echo_dt) "$(C_WARNING) Cleaning Bib intermediates...$(C_RESET)"
-	$(call clean-files, $(clean_tex_bib_files))
+	$(call clean-files,$(clean_tex_bib_files))
 	
 clean-mdt:
 	$(QUIET)$(echo_dt) "$(C_WARNING) Cleaning Markdown/Html intermediates...$(C_RESET)"
-	$(call clean-files, $(clean_mdt_files))
+	$(call clean-files,$(clean_mdt_files))
 	
+clean-tex: clean-aux clean-files
+	$(QUIET)$(echo_dt) "$(C_WARNING) Cleaning LaTeX intermediates...$(C_RESET)"
+	$(call clean-files,$(clean_tex_files))
+
 clean-mdh:
 	$(QUIET)$(echo_dt) "$(C_WARNING) Cleaning Markdown/Html intermediates...$(C_RESET)"
-	$(call clean-files, $(clean_mdh_files))
+	$(call clean-files,$(clean_mdh_files))
 
-clean-html: clean-files
+clean-html: clean-files clean-css
 	$(QUIET)$(echo_dt) "$(C_WARNING) Clean HTML $(clean_html_files)...$(C_RESET)"
-	$(call clean-files, $(clean_html_files))
+	$(call clean-files,$(clean_html_files))
 	
 clean-css:
 	$(QUIET)$(echo_dt) "$(C_WARNING) Clean CSS intermediates...$(C_RESET)"
-	$(call clean-files, $(clean_css_files))
+	$(call clean-files,$(clean_css_files))
 
 clean-fig:
-	$(QUIET)$(echo_dt) "$(C_WARNING) Clean unnecessary figures...$(C_RESET)"
-	$(call clean-files, $(clean_fig))
+	$(QUIET)$(echo_dt) "$(C_WARNING) Clean figures intermediates...$(C_RESET)"
+	$(call clean-files,$(clean_fig))
 
 # DISTCLEAN TARGETS
 # Remove all intermediate
 .PHONY: distclean
-distclean: distclean-dirs
-distclean-dirs: clean-all
-	$(QUIET)$(echo_dt) "$(C_ERROR) Distclean unnecessary subdirs of the project$(C_RESET)"
-	$(QUIET)$(call clean-files, $(distclean_files))
+distclean: clean
+	$(QUIET)$(echo_dt) "$(C_ERROR) Distclean unnecessary subdirs:'$(distclean_subdirs)'$(C_RESET)"
+	$(QUIET)$(call clean-files,$(distclean_files))
 	$(QUIET)$(RM) -r $(distclean_subdirs)
-  
+
+# make a compressed archive
+# $(call make_archive,<compressed_file>,dir)
+define make_archive
+$(ZIP) -r -T -q $1 $2
+endef
+#
+
+.PHONY:dist
+dist: distclean archive
+archive:zip;
+zip:
+	$(QUIET)$(call echo-run,$(ZIP),$(DISTNAME),../$(TODAY)_$(MAIN_DOC_BASENAME).zip)
+	$(call make_archive,../$(TODAY)_$(MAIN_DOC_BASENAME).zip,*)
+
+tbz:
+	$(QUIET)$(call echo-run,$(TAR),$(DISTNAME),../$(TODAY)_$(MAIN_DOC_BASENAME).tbz)
+	cd .. &&$(TAR) cjf $(TODAY)_$(MAIN_DOC_BASENAME).tbz $(DISTNAME) && cd -
 ################################################################################
 # HELPFUL PHONY TARGETS
 #
@@ -1530,5 +1561,126 @@ _all_sources:
 	$(QUIET)$(echo_dt) "== All Sources =="
 	$(QUIET)$(call echo-list,$(sort $(files_sources)))
 
+#
+# HELP TEXT
+#
 
-# DO NOT DELETE
+define help_text
+% MAKE(1) Make for pandoc-df-thesis-template 
+% D. Folio
+% November 26, 2018
+
+# NAME
+
+make - make utility to build a pandoc-df-thesis-template dissertation 
+
+ Generates a number of possible output files from Pandoc document and its
+ various dependencies. 
+
+# SYNOPSIS
+
+make [GRAY=1] [VERBOSE=1] [SHELL_DEBUG=1] <target(s)>
+
+# DESCRIPTION
+
+This Makefile allows to generate  pandoc-df-thesis-template dissertation in
+various output format, and its necessary materials. 
+
+Once you have edited the `Makefile` (optional), the `_data/variables.yml` (advised), and  written some elements in the sources directory:  `_md/`, run this simple shell command:
+
+  make 
+
+# STANDARD TARGETS
+
+all
+:  Make default targets (defined with `BUILD_DEFAULT_TARGETS`), e.g.: html, pdf
+
+pdf
+:  Build the PDF output document from LaTeX generated files.
+
+     **Note**: the PDF is generated using the `BUILD_TEX_STRATEGY`, set with one of: lualatex, pdflatex or xelatex
+
+html
+:  Build the HTML(5) output document:
+
+   -  If `BUILD_HTML_FORMAT=htmlsimple`: a single HTML(5) document are generated using Pandoc.
+   -  If `BUILD_HTML_FORMAT=htmlmulti`: multiple HTML(5) documents are  generated using Jekyll.
+
+docx
+:  Build the MS Word output document
+
+odt
+:  Build the LibreOffice/OpenOffice output document
+
+epub
+:  Build the EPUB(v3) output document
+
+xml
+:  Build the DocBook(v5) output document
+
+clean
+:  Remove ALL generated files, leaving only sources and "important" intermediates 
+   intact. This will *always* skip files mentioned in the "neverclean" variable,
+   either in this file or specified in Makefile.ini, e.g.:
+   
+   ```
+     neverclean := *.pdf *.svg
+   ```
+
+distclean
+:  *Remove ALL generated files!!!* (e.g. 'build/' is removed!!!).
+
+
+dist
+:  Create an archive file for the dissertation.
+
+    - **Note 1**: the *distclean* target are called before creating the archive! 
+    - **Note 2**: the archive are place in the parent folder with the following 
+      format: `<TODAY>_<MAIN_DOC_BASENAME>.zip`
+
+# STANDARD OPTIONS:
+
+VERBOSE
+:  This turns off all @ prefixes for commands invoked by make.  Thus,
+    you get to see all of the gory details of what is going on.
+
+SHELL_DEBUG
+:  This enables the -x option for sh, meaning that everything it does is
+    echoed to stderr.  This is particularly useful for debugging
+    what is going on in $$(shell ...) invocations.  One of my favorite
+    debugging tricks is to do this:
+
+    make -d SHELL_DEBUG=1 VERBOSE=1 2>&1 | less
+
+KEEP_TEMP
+:  When set, this allows .make and other temporary files to stick around
+    long enough to do some debugging.  This can be useful when trying to
+    figure out why gnuplot is not doing the right things, for example.
+
+# Minor Issue
+
+In case of troubleshooting, first hit:
+
+```{sh}
+make _check_programs
+```
+
+and look for "Not Found" programs: some of them are mandatory!
+ 
+# See Also
+
+- The [GitHub](https//github.com) repository: <https://github.com/dfolio/pandoc-df-thesis-template>
+- The [GitHub](https//github.com) wiki: <https://github.com/dfolio/pandoc-df-thesis-template/wiki>
+
+
+endef
+
+#
+# HELP TARGETS
+#
+export help_text
+.PHONY: help
+help:
+	$(ECHO) "$$help_text" | $(PANDOC) -s  -f markdown -t man | man -l -
+
+
