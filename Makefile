@@ -13,9 +13,9 @@
 ################################################################################
 # SIMPLE CONFIGURATION #########################################################
 
-#Select the HTML format 
-BUILD_HTML_FORMAT   ?= htmlmulti
-#BUILD_HTML_FORMAT   ?= htmlsimple
+#Select the output mode for HTML and TeX 
+BUILD_OUTPUT_MODE    ?= multi
+#BUILD_OUTPUT_MODE   ?= simple
 #Select the prefered build strategy
 #BUILD_TEX_STRATEGY  ?= pdflatex
 BUILD_TEX_STRATEGY  ?= lualatex
@@ -134,7 +134,7 @@ SASSDIR     ?=_sass
 NODEDIR     ?=node_modules
 SCSSINCS    ?=$(SASSDIR) $(NODEDIR)/bootstrap/scss
 
-prepare_targets+=$(NODEDIR)/bootstrap
+prepare_targets+=$(NODEDIR)/bootstrap/
 
 # END SIMPLE CONFIGURATION
 ################################################################################
@@ -395,6 +395,7 @@ ifdef VERBOSE
 TEXFLAGS    += -interaction=nonstopmode
 PANDOC_FLAGS+= --verbose
 RSYNC_FLAGS += --verbose -h --progress
+WRITE_LOG   ?= 1
 else
 TEXFLAGS    += -interaction=batchmode -file-line-error
 BIBTEX      += -terse
@@ -406,7 +407,8 @@ endif
 # Turn on shell debugging with SHELL_DEBUG=1
 # (EVERYTHING is echoed, even $(shell ...) invocations)
 ifdef SHELL_DEBUG
-SHELL  += -x
+SHELL       += -x
+WRITE_LOG   ?= 1
 endif
 
 # Get the name of this makefile (always right in 3.80, often right in 3.79)
@@ -449,7 +451,8 @@ remove-files        = $(call remove-files-helper,$(wildcard $1))
 # $(call clean-files,source destination file3 ...)
 # Works exactly like remove-files, but filters out files in $(neverclean)
 clean-files    = \
-  $(if $VERBOSE, $(echo_dt) "$(C_WARNING) Clean files '$(wildcard $1)' $(C_RESET)",); \
+  $(if $(VERBOSE),\
+  $(echo_dt) "$(C_WARNING)Clean files '$1'$(C_RESET)",:); \
   $(call remove-files,$(call cleanable-files,$(wildcard $1)))
 
 # $(call remove-temporary-files,filenames)
@@ -535,6 +538,14 @@ blue    := $(call get-term-code,setaf 4)
 magenta := $(call get-term-code,setaf 5)
 cyan    := $(call get-term-code,setaf 6)
 white   := $(call get-term-code,setaf 7)
+bg_black   := $(call get-term-code,setab 0)
+bg_red     := $(call get-term-code,setab 1)
+bg_green   := $(call get-term-code,setab 2)
+bg_yellow  := $(call get-term-code,setab 3)
+bg_blue    := $(call get-term-code,setab 4)
+bg_magenta := $(call get-term-code,setab 5)
+bg_cyan    := $(call get-term-code,setab 6)
+bg_white   := $(call get-term-code,setab 7)
 bold    := $(call get-term-code,bold)
 uline   := $(call get-term-code,smul)
 reset   := $(call get-term-code,sgr0)
@@ -543,15 +554,15 @@ reset   := $(call get-term-code,sgr0)
 # User-settable definitions
 #
 MSG_COLOR_WARNING   ?= magenta
-MSG_COLOR_CLEAN     ?= magenta
-MSG_COLOR_DISTCLEAN ?= magenta bold
+MSG_COLOR_CLEAN     ?= bg_white magenta
+MSG_COLOR_DISTCLEAN ?= bg_white magenta bold
 MSG_COLOR_ERROR     ?= red
 MSG_COLOR_INFO      ?= green
 MSG_COLOR_UNDERFULL ?= magenta
 MSG_COLOR_OVERFULL  ?= red bold
 MSG_COLOR_PAGES     ?= bold
-MSG_COLOR_BUILD     ?= cyan
-MSG_COLOR_RUN       ?= cyan bold
+MSG_COLOR_BUILD     ?= blue
+MSG_COLOR_RUN       ?= cyan
 MSG_COLOR_GRAPHIC   ?= yellow
 MSG_COLOR_DEP       ?= green
 MSG_COLOR_SUCCESS   ?= green bold
@@ -565,6 +576,7 @@ get-color  = $(subst $(space),,$(foreach c,$(MSG_COLOR_$1),$($c)))
 #
 # STANDARD COLORS
 #
+C_BOLD      := $(bold)
 C_WARNING   := $(call get-color,WARNING)
 C_ERROR     := $(call get-color,ERROR)
 C_INFO      := $(call get-color,INFO)
@@ -580,16 +592,18 @@ C_FAILURE   := $(call get-color,FAILURE)
 C_CLEAN     := $(call get-color,CLEAN)
 C_DISTCLEAN := $(call get-color,DISTCLEAN)
 C_RESET     := $(reset)
+C_INDENT    := $(shell printf "%${i}s" '')
 
 get_date_time   = $(DATE) +"%F %T"
 
 # Display information about what is being done
-echo_dt       = $(ECHO) "$(shell $(get_date_time) )"
+echo_dt       = $(ECHO) -e "$(black)$(shell $(get_date_time))$(C_RESET)"
 # $(call echo-build,<input file>,<output file>,[<run number>])
-echo-build    = $(echo_dt) "$(C_BUILD)**Build** $1 --> $2$(if $3, ($3),)...$(C_RESET)"
-echo-run      = $(echo_dt) "$(C_RUN)**Run $1** $(if $2, $2 $(if $3, --> $3,),)...$(C_RESET)"
-echo-graphic  = $(echo_dt) "$(C_GRAPHIC)**Figure** $1 --> $2$(C_RESET)"
-echo-dep      = $(echo_dt) "$(C_DEP)**Deps** $1 --> $2$(C_RESET)"
+echo-build    = $(echo_dt) "\t$(C_BUILD)$(bold)==Build==$(C_RESET)$(C_BUILD)\t$1 --> $2$(if $3, ($3),)...$(C_RESET)"
+echo-run      = $(echo_dt) "\t$(C_RUN)>>$(bold)Run $1$(C_RESET)$(C_RUN)$(if $2,\t$2 $(if $3,--> $3,),)...$(C_RESET)"
+echo-copy     = $(echo_dt) "\t$(C_RUN)>>Copy $1$(if $2,\t$2 $(if $3,--> $3,),)...$(C_RESET)"
+echo-graphic  = $(echo_dt) "$(C_GRAPHIC)++Gen. Fig.++ \t$1 --> $2$(C_RESET)"
+echo-dep      = $(echo_dt) "$(C_DEP)**Deps**\t$1 --> $2$(C_RESET)"
 echo-error    = $(echo_dt) "$(C_ERROR)**ERROR** $1 $(C_RESET)"
 echo-failure  = $(echo_dt) "$(C_ERROR)**FAILED** $1 $(C_RESET)"
 echo-warning  = $(echo_dt) "$(C_WARNING)**WARNING** $1 $(C_RESET)"
@@ -627,6 +641,15 @@ define output-all-programs
   $(ECHO) "Cannot determine the name of this makefile."
 endef
 
+WRITE_LOG ?=
+# Log command to a log file
+# $(call output-to-log,log)
+define output-to-log
+$(if $(WRITE_LOG),>> $1,>/dev/null)
+endef
+
+TEXLOG    ?=$(ROOTDIR)/$(TEXDIR)/build.log
+
 # LaTeX invocations
 #
 # Note that we use
@@ -641,7 +664,7 @@ define run-latex
 $(call echo-run,$(latex_build_program),$1); \
 $(latex_build_program) -jobname='$(notdir $1)'\
   -interaction=batchmode -file-line-error \
-  $(LATEX_OPTS) $(if $2,$2,) $1 > /dev/null
+  $(LATEX_OPTS) $(if $2,$2,) $1 $(call output-to-log,$(TEXLOG))
 endef
 # -output-directory='$(TEXDIR)' 
 
@@ -776,6 +799,25 @@ if $(call test-not-exists,$1.aux); then \
 fi
 endef
 
+# Outputs all index files to stdout.  Arg 1 is the source file stem, arg 2 is
+# the list of targets for the discovered dependency.
+#
+# $(call get-log-index,<log>,<target files>)
+define get-log-index
+$(SED) \
+-e 's/^No file \(.*\.ind\)\.$$/TARGETS=\1/' \
+-e 's/^No file \(.*\.[gn]ls\)\.$$/TARGETS=\1/' \
+-e 's/[[:space:]]/\\&/g' \
+-e '/^TARGETS=/{' \
+-e '  h' \
+-e '  s!^TARGETS=!$2: !p' \
+-e '  g' \
+-e '  s!^TARGETS=\(.*\)!\1: $1.tex!p' \
+-e '}' \
+-e 'd' \
+'$1.log' | $(SORT) | $(UNIQ)
+endef
+
 # Get BUILD_BIB_STRATEGY from tex file
 define get-bib-strategy
  $(shell $(EGREP) -q '^[^%]*\\usepackage\[.*backend=biber.*\]{biblatex}' $1 && $(ECHO) "biber" || $(ECHO) bibtex )
@@ -840,33 +882,21 @@ INKSCAPE_FLAGS  +=--vacuum-defs --export-area-page
 define convert-svg
 $(INKSCAPE) $(INKSCAPE_FLAGS) '$(strip $1)' $(call get-inkscape-export,$2)='$(strip $2)'
 endef
-#
-tt:
-	$(ECHO) "$(call convert-svg,Clnavier.svg,Clnavier.svg)"
 
 ###############################################################################
 # VARIABLE DECLARATIONS
 #
 
-ifeq "$(strip $(BUILD_HTML_STRATEGY))" "html"
-endif
-
 ifeq "$(strip $(BUILD_TEX_STRATEGY))" "pdflatex"
 latex_build_program		    ?= $(PDFLATEX)
-hyperref_driver_pattern		?= hpdf.*
-hyperref_driver_error		  ?= Using pdflatex: specify pdftex in the hyperref options (or leave it blank).
 endif
 
 ifeq "$(strip $(BUILD_TEX_STRATEGY))" "xelatex"
 latex_build_program		    ?= $(XELATEX)
-hyperref_driver_pattern		?= hdvipdf.*
-hyperref_driver_error		  ?= Using xelatex: specify xelatex in the hyperref options (or leave it blank).
 endif
 
 ifeq "$(strip $(BUILD_TEX_STRATEGY))" "lualatex"
 latex_build_program		    ?= $(LUALATEX)
-hyperref_driver_pattern		?= hdvipdf.*
-hyperref_driver_error		  ?= Using xelatex: specify lualatex in the hyperref options (or leave it blank).
 endif
 
 ifdef GLOSSARIES
@@ -889,9 +919,6 @@ files_frontmatter_tex := $(files_frontmatter:$(INDIR)/%.md=$(TEXDIR)/%.tex)
 files_mainmatter_tex  := $(files_mainmatter:$(INDIR)/%.md=$(TEXDIR)/%.tex)
 files_mainmatter_mdt  := $(files_mainmatter:$(INDIR)/%.md=$(TEXDIR)/%.mdt)
 files_backmatter_tex  := $(files_backmatter:$(INDIR)/%.md=$(TEXDIR)/%.tex)
-PANDOC_TEX_FLAGS      += $(foreach f,$(files_frontmatter_tex), --include-before-body=$(f)) \
-  $(foreach f,$(files_backmatter_tex), --include-after-body=$(f)) 
-
 files_tex             := $(files_frontmatter_tex) $(files_mainmatter_tex) $(files_backmatter_tex)
 files_sty             := $(wildcard $(TEMPLATEDIR)/*.sty)
 tex_sty               := $(files_sty:$(TEMPLATEDIR)/%=$(TEXDIR)/%)
@@ -923,29 +950,28 @@ fig_emf     := $(figures:%=$(OUTDIR)/%.emf)
 dir_deps  += $(OUTDIR) $(OUT_ASSETSDIR) $(MDHDIR) $(HTMLDIR) $(MDXDIR) $(XMLDIR) $(MDTDIR) $(OUT_FIGDIR) $(OUT_BIBDIR) $(CSSDIR)
 base_deps += $(files_sources) $(METADATA) $(VARSDATA) $(PP_MACROS) $(OUT_ASSETSDIR) $(OUT_FIGDIR) 
 bib_deps  += $(CSL) $(BIBFILES)
-
+bibtex_deps+= $(BIBFILES) $(OUT_BIBDIR) $(BIBFILES:$(BIBDIR)/%=$(OUT_BIBDIR)/%)
 mdt_deps  += $(MDTDIR) $(files_mdt) $(base_deps) $(PP_TEX_MACROS) $(bib_deps)
-tex_deps  += $(TEXDIR) $(mdt_deps)  $(TEMPLATEDIR)/template.latex $(tex_sty) \
-  $(OUT_FONTDIR)/ $(OUT_BIBDIR) $(fig_pdf) \
-  $(BIBFILES:$(BIBDIR)/%=$(OUT_BIBDIR)/%)
+tex_deps  += $(TEXDIR) $(mdt_deps) $(TEMPLATEDIR)/template.latex $(tex_sty) \
+  $(OUT_FONTDIR)/ $(fig_pdf) $(bibtex_deps)
 pdf_deps  += 
 ifdef GLOSSARIES
 tex_deps += $(GLOSSARIES_TEX)
 endif
 
 css_deps  += $(SCSSINCS) $(foreach d,  $(SCSSINCS), $(wildcard $(d)/*.scss))
-mdh_deps  += $(MDHDIR) $(files_mdh) $(base_deps) $(PP_HTML_MACROS)  $(bib_deps)
-html_deps += $(HTMLDIR) $(OUT_FIGDIR) $(mdh_deps) \
-  $(SCSSINCS) $(html_css) $(fig_svg)
+mdh_deps  += $(MDHDIR) $(base_deps) $(PP_HTML_MACROS) $(bib_deps) 
+html_deps += $(HTMLDIR) $(OUT_FIGDIR) $(mdh_deps) $(SCSSINCS) $(html_css) \
+  $(files_mdh) $(fig_svg)
 ifdef GLOSSARIES
-html_deps += $(PP_GLO_HTML)
+mdh_deps += $(PP_GLO_HTML)
 endif
-ifeq ($(BUILD_HTML_FORMAT), htmlmulti)
+ifeq ($(BUILD_OUTPUT_MODE),multi)
 html_deps += $(htmlmuli_temp)
 endif
 
 epub_deps += $(mdh_deps) $(TEMPLATEDIR)/template.epub3 \
-  $(SCSSINCS) $(filter %epub.css,$(files_css))  $(fig_svg)
+  $(SCSSINCS) $(filter %epub.css,$(files_css)) $(fig_svg)
 docx_deps += $(OUTDIR) $(mdh_deps) $(TEMPLATEDIR)/template.docx $(fig_emf)
 odt_deps  += $(OUTDIR) $(mdh_deps) $(TEMPLATEDIR)/template.odt  $(fig_png)
 
@@ -960,14 +986,17 @@ endif
 ################################################################################
 # clean
 clean_subdirs       += $(MDDIR) $(DATADIR) $(BIBDIR) $(FIGDIR) $(HTMLDIR) $(TEXDIR) 
-clean_patterns      += *~ *.bak
+clean_patterns      += *~ *.bak *.backup *.bck
 clean_files         += $(foreach d,. $(clean_subdirs),$(addprefix $(d)/,$(clean_patterns))) $(BIB)
 clean_css_files     += $(files_css)
 clean_fig           += $(fig_svg) $(fig_pdf) $(fig_png) $(fig_emf)
 clean_mdt_files     += $(files_mdt)
 
 ## Core latex/pdflatex auxiliary files:
-clean_tex_aux_pattern+=*.aux *.lof *.log *.lot *.fls *.out *.toc *.fmt *.fot *.cb *.cb2
+clean_tex_aux_pattern+=*.aux *.cb *.cb2 *.fls *.fmt \
+  *.fot *.lof *.log *.lol *.lot  *.out *.toc  *.upa *.upb\
+  *.idx *.ind *.ilg *.glg *.glo *.gls *.nls *.nlo *.nlg \
+  *.xmpdata
 clean_tex_aux_files += $(addprefix $(TEXDIR)/,$(clean_tex_aux_pattern)))
 ## Bibliography auxiliary files (bibtex/biblatex/biber):
 clean_tex_bib_pattern+=*.bbl *.bcf *.blg *-blx.aux *-blx.bib *.run.xml
@@ -1003,7 +1032,7 @@ watch-pdf:
 endif
 
 test:
-	$(QUIET)$(ECHO) "fig_svg  $(PANDOC_TEX_FLAGS) "
+	$(QUIET)$(ECHO) "fig_svg  $(html_deps) "
 ################################################################################
 # MAIN TARGETS
 #
@@ -1011,21 +1040,21 @@ test:
 # HTML Output target
 .PHONY: html
 #.SECONDARY: $(HTMLDIR)/$(MAIN_DOC_BASENAME).html
-html: 
-ifeq ($(BUILD_HTML_FORMAT), htmlsimple)
+html:$(html_deps)
+ifeq ($(BUILD_OUTPUT_MODE), simple)
 	$(QUIET)$(MAKE) $(HTMLDIR)/$(MAIN_DOC_BASENAME).html
 endif
-ifeq ($(BUILD_HTML_FORMAT), htmlmulti)
+ifeq ($(BUILD_OUTPUT_MODE),multi)
 	$(QUIET)$(MAKE) run-jekyll;
 endif
-ifeq ($(BUILD_HTML_FORMAT), html_db_chunk)
+ifeq ($(BUILD_OUTPUT_MODE), html_db_chunk)
 	$(QUIET)$(MAKE) xml-chunk
 endif
 
 html-deps:$(html_deps)
 	$(QUIET)$(call echo-dep,html,$(html_deps))
 
-ifeq ($(BUILD_HTML_FORMAT), htmlsimple)
+ifeq ($(BUILD_OUTPUT_MODE), simple)
 html_deps += $(TEMPLATEDIR)/template.html5
 $(HTMLDIR)/$(MAIN_DOC_BASENAME).html: $(html_deps)
 	$(QUIET)$(call echo-run,$(PANDOC),,$@)
@@ -1098,12 +1127,19 @@ $(XMLDIR)/$(MAIN_DOC_BASENAME).xml: $(xml_deps)
 pdf:$(OUTDIR)/$(MAIN_DOC_BASENAME).pdf 
 
 define REMAKE_FLAGS
+ROOTDIR='$(ROOTDIR)' \
 files_frontmatter='$(files_frontmatter)' \
 files_mainmatter='$(files_mainmatter)' \
 files_backmatter='$(files_mainmatter)'
 endef
 
-$(TEXDIR)/$(MAIN_DOC_BASENAME).pdf:$(TEXDIR)/$(MAIN_DOC_BASENAME).tex 
+$(OUTDIR)/$(MAIN_DOC_BASENAME).pdf:$(pdf_deps) \
+  $(call path-norm,$(TEXDIR)/$(MAIN_DOC_BASENAME).pdf)
+	$(QUIET)$(call echo-run,"Move",$<,$@)
+	$(call replace-temporary-if-different-and-remove,$<,$@)
+	$(call echo-end-target,$@)
+
+$(TEXDIR)/$(MAIN_DOC_BASENAME).pdf:$(call path-norm,$(TEXDIR)/$(MAIN_DOC_BASENAME).tex)
 	$(QUIET)$(call echo-build,$<,$@)
 	$(QUIET)cd $(TEXDIR)&&$(MAKE) -f $(PWD)/$(this_file) $(REMAKE_FLAGS) \
 	  BUILD_BIB_STRATEGY='$(strip $(call get-bib-strategy,$(TEXDIR)/$(MAIN_DOC_BASENAME).tex))' \
@@ -1111,25 +1147,40 @@ $(TEXDIR)/$(MAIN_DOC_BASENAME).pdf:$(TEXDIR)/$(MAIN_DOC_BASENAME).tex
 	$(call echo-end-target,$@)
 #	$(QUIET)$(ECHO) "$(C_FAILURE) build of $@ not yet implemented$(C_RESET)"
 
-$(OUTDIR)/$(MAIN_DOC_BASENAME).pdf:$(TEXDIR)/$(MAIN_DOC_BASENAME).pdf $(pdf_deps)
-	$(QUIET)$(call echo-run,"Move",$<,$@)
-	$(call replace-temporary-if-different-and-remove,$<,$@)
-	$(call echo-end-target,$@)
-
+.SECONDARY: $(TEXDIR)/$(MAIN_DOC_BASENAME).pdf \
+  $(TEXDIR)/$(MAIN_DOC_BASENAME).tex 
 
 tex: $(TEXDIR)/$(MAIN_DOC_BASENAME).tex
-	$(QUIET)$(ECHO) "tex_deps $(tex_deps)"	
 
-$(TEXDIR)/$(MAIN_DOC_BASENAME).tex:$(tex_deps) $(files_frontmatter_tex) $(files_backmatter_tex)
-	$(QUIET)$(call echo-run,$(PANDOC),$<,$@)
+ifeq ($(BUILD_OUTPUT_MODE), simple)
+$(TEXDIR)/$(MAIN_DOC_BASENAME).tex: $(files_frontmatter_tex) $(files_backmatter_tex) $(tex_deps)
+	$(QUIET)$(call echo-build,LaTeX files,$@)
+	$(QUIET)$(call echo-run,$(PANDOC),...,$@)
 	$(QUIET)$(MKDIR) $(TEXDIR)
 	$(QUIET)$(PANDOC) -f markdown$(PANDOC_MDEXT) \
 	  $(PANDOC_FLAGS) $(VARSDATA) $(PANDOC_TEX_FLAGS)\
+	  $(foreach f,$(files_frontmatter_tex),--include-before-body=$(f)) \
+    $(foreach f,$(files_backmatter_tex),--include-after-body=$(f)) \
 	  $(files_mainmatter_mdt) -t latex -o $@
 	$(call echo-end-target,$@)
+endif
+ifeq ($(BUILD_OUTPUT_MODE),multi)
+$(TEXDIR)/$(MAIN_DOC_BASENAME).tex:$(files_tex) $(tex_deps) 
+	$(QUIET)$(call echo-build,LaTeX files,$@)
+	$(call echo-list,$(foreach f,$(files_mainmatter_tex),\\include{$(notdir $(basename $(f)))})) >$(TEXDIR)/$(MAIN_DOC_BASENAME)_inc
+	$(QUIET)$(call echo-run,$(PANDOC),...,$@)
+	$(PANDOC) $(PANDOC_FLAGS) $(VARSDATA) $(PANDOC_TEX_FLAGS)\
+	  $(foreach f,$(files_frontmatter_tex),-V frontmatter=$(notdir $(basename $(f))))\
+	  $(foreach f,$(files_backmatter_tex),-V backmatter=$(notdir $(basename $(f)))) \
+	  $(TEXDIR)/$(MAIN_DOC_BASENAME)_inc -t latex -o $(TEXDIR)/$(MAIN_DOC_BASENAME).tex
+	$(call remove-temporary-files,$(TEXDIR)/$(MAIN_DOC_BASENAME)_inc)
+	$(call echo-end-target,$@)
+endif
 
 # Merge all bibliography in BIB
-.PHONY: biblio
+#
+.PHONY: biblio $(BIB)
+.SECONDARY:$(BIB)
 biblio:$(BIB)
 $(BIB):$(BIBFILES)
 	$(QUIET)$(call echo-build,"Merge",$(BIBFILES),$@)
@@ -1137,13 +1188,17 @@ $(BIB):$(BIBFILES)
 	$(QUIET)$(CAT) $(BIBFILES) > $(BIB)
 
 $(OUT_BIBDIR)/%.bib:$(BIBDIR)/%.bib
-	$(QUIET)$(call echo-run,"Copy bib",$<,$@)	
+	$(QUIET)$(call echo-copy,bib,$<,$@)	
 	$(QUIET)$(call copy-if-exists,$<,$@)
 
-
+$(ROOTDIR)/$(OUT_BIBDIR)/%.bib:$(ROOTDIR)/$(BIBDIR)/%.bib
+	$(QUIET)$(call echo-copy,bib+,$<,$@)	
+	$(QUIET)$(call copy-if-exists,$<,$@)
 #########################
 # Intermediate MDT rules for LaTeX/PDF 
-
+# Keep the generated .tex files around for debugging if needed.
+.SECONDARY: $(files_tex)
+	
 # $(call test-run-again,<source stem>)
 define test-run-again
 $(EGREP) '^(.*Rerun .*|No file $1\.[^.]+\.)$$' $1.log \
@@ -1160,6 +1215,7 @@ endef
 	fi; \
 	for i in 2 3 4; do \
 		if $(call test-run-again,$*); then \
+	    $(echo_dt) "$(C_INFO)Need to re-run LaTeX...$(C_RESET)";\
 			$(call echo-build,$<,$*.pdf,$$i); \
 			$(call run-latex,$*); \
 		else \
@@ -1185,6 +1241,7 @@ endif
 
 %.aux %.bcf %.fls:%.tex
 	$(QUIET)$(call echo-build,$<,$*.pdf,1);\
+	$(echo_dt) "$(C_INFO)Create/Update $*.aux $*.bcf and $*.fls$(C_RESET)";\
 	$(call run-latex,$*,-recorder)|| $(sh_true); \
 	$(call die-on-no-aux,$*) ;\
 	fatal=`$(call colorize-latex-errors,$*.log)`; \
@@ -1208,11 +1265,11 @@ $(MDTDIR)/%.mdt:$(MDDIR)/%.md
 	$(QUIET)$(PANDOC) $< $(METADATA) $(PANDOC_FLAGS)  -t latex -o $@
   
 $(TEXDIR)/%.sty:$(TEMPLATEDIR)/%.sty
-	$(QUIET)$(call echo-run,"Copy template sty",$<,$@)
+	$(QUIET)$(call echo-copy,sty,$<,$@)
 	$(QUIET)$(call copy-if-exists,$<,$@)
 
 $(OUT_FONTDIR)/:$(FONTDIR)/
-	$(QUIET)$(call echo-run,"Copy fonts",$<,$@)
+	$(QUIET)$(call echo-copy,Fonts,$<,$@)
 	$(QUIET)$(MKDIR) $(OUT_FONTDIR)
 	$(QUIET)$(call copy-if-exists,$<,$@)
 
@@ -1260,7 +1317,7 @@ $(CSSDIR)/%.css:$(SCSSDIR)/%.scss $(css_deps)
 	$(QUIET)$(MKDIR) $(CSSDIR); 	$(SASS) $(SASS_FLAGS) $< $@
 
 .SECONDARY:  $(NODEDIR)/bootstrap/scss
-$(NODEDIR)/bootstrap/scss: $(NODEDIR)/bootstrap
+$(NODEDIR)/bootstrap/scss: $(NODEDIR)/bootstrap/
 	$(QUIET)$(ECHO) "$(C_INFO) Bootstrap is in '$(NODEDIR)/bootstrap/' folder$(C_RESET)"
 	$(QUIET)$(NPM) update bootstrap
 
@@ -1268,8 +1325,8 @@ $(SASS):$(NODEDIR)/sass
 	$(QUIET)$(ECHO) "$(C_INFO) SASS is  in '$(NODEDIR)/sass'$(C_RESET)"
 
 # get bootstrap and its dependancies
-bootstrap:$(NODEDIR)/bootstrap
-	$(QUIET)$(ECHO) "$(C_INFO) Bootstrap is in '$(NODEDIR)/bootstrap'$(C_RESET)"
+#bootstrap:$(NODEDIR)/bootstrap/
+#	$(QUIET)$(ECHO) "$(C_INFO) Bootstrap is in '$(NODEDIR)/bootstrap'$(C_RESET)"
 ################################################################################
 #  Intermediate Figures rules
 # Converts svg files into .eps files
@@ -1318,24 +1375,24 @@ $(OUT_FIGDIR)/%.emf:$(OUT_FIGDIR)/%.svg
 ################################################################################
 # PREPARE TARGETS
 #
-dir_prep = $(sort $(dir_deps))
+dir_prep += $(sort $(dir_deps))
+ifeq ($(BUILD_OUTPUT_MODE),multi)
+dir_prep += $(htmlmuli_temp)
+endif
 .PHONY: prepare dirs $(dir_prep)
 prepare: dirs $(prepare_targets)
 dirs: $(dir_prep)
 $(dir_prep):
-	$(QUIET)$(MKDIR) $@
-ifeq ($(BUILD_HTML_FORMAT), htmlmulti)
-	$(QUIET)$(MAKE) $(htmlmuli_temp)
-endif
+	$(QUIET)$(call echo-run,Make dir,$@); $(MKDIR) $@
 
 # Install a npm module
-$(NODEDIR)/%:
-	$(QUIET)$(ECHO) "$(C_INFO) $@ will be installed in the local folder$(C_RESET)"
-	$(QUIET)$(call echo-run,$(NPM),$<,$@)
-	$(QUIET)$(ECHO) "npm install $(@:$(NODEDIR)/%=%)"
-	$(QUIET)$(ECHO) "$(C_INFO) $(@:$(NODEDIR)/%=%) is now in '$@'$(C_RESET)"
+$(NODEDIR)/%/:
+	$(QUIET)$(ECHO) "$(C_INFO) $* will be installed in the local folder$(C_RESET)"
+	$(QUIET)$(call echo-run,$(NPM)++,$*,$@)
+	$(QUIET)$(NPM) install $*
+	$(QUIET)$(ECHO) "$(C_INFO) $* now in '$@'$(C_RESET)"
 
-ifeq ($(BUILD_HTML_FORMAT), htmlmulti)
+ifeq ($(BUILD_OUTPUT_MODE),multi)
 REAL_BUNDLE   := $(shell $(WHICH) $(BUNDLE))
 REAL_JEKYLL   := $(BUNDLE) exec $(JEKYLL)
 
@@ -1349,7 +1406,7 @@ $(htmlmuli_temp):
 	$(QUIET)$(echo_dt) "$(C_BUILD)Prepare 'htmlmuti' output with jekyll in '$(htmlmuli_temp)' $(C_RESET)"
 	$(QUIET)$(MKDIR) $(htmlmuli_temp)
 $(htmlmuli_temp)/.synced: $(htmlmuli_temp) $(wildcard $(TEMPLATEJEKYLLDIR)/*)
-	$(QUIET)$(call echo-run,"Copy base Jekyll",$<,$@)
+	$(QUIET)$(call echo-copy,Jekyll,$<,$@)
 	$(QUIET)$(call clean-files,$(htmlmuli_temp)/.synced)
 	$(QUIET)$(call copy-helper,$(TEMPLATEJEKYLLDIR)/,$(htmlmuli_temp)/)\
 	&& $(TOUCH) $(htmlmuli_temp)/.synced
@@ -1357,34 +1414,35 @@ $(htmlmuli_temp)/.synced: $(htmlmuli_temp) $(wildcard $(TEMPLATEJEKYLLDIR)/*)
 htmlmulti_dep   += $(htmlmuli_temp)/metadata.yml $(htmlmuli_temp)/variables.yml
 
 $(htmlmuli_temp)/metadata.yml: $(METADATA)
-	$(QUIET)$(call echo-run,"Copy metadata",$<,$@)
+	$(QUIET)$(call echo-copy, metadata,$<,$@)
 	$(QUIET)$(call copy-if-exists,$(METADATA),$(htmlmuli_temp)/)
 
 $(htmlmuli_temp)/variables.yml: $(VARSDATA)
-	$(QUIET)$(call echo-run,"Copy variables",$<,$@)
+	$(QUIET)$(call echo-copy,vars,$<,$@)
 	$(QUIET)$(call copy-if-exists,$(VARSDATA),$(htmlmuli_temp)/_data/)
 
 htmlmulti_csl   := $(htmlmuli_temp)/assets/bib/$(notdir $(CSL))
 htmlmulti_bib   := $(htmlmuli_temp)/assets/bib/$(notdir $(BIB))
 htmlmulti_dep   += $(htmlmulti_csl) $(htmlmulti_bib)
 
-$(htmlmulti_csl): $(CSL)
-	$(QUIET)$(call echo-run,"Copy csl",$<,$@)
+$(htmlmulti_csl):$(CSL)
+	$(QUIET)$(call echo-copy,csl,$<,$@)
 	$(QUIET)$(call copy-if-exists,$(CSL),$(htmlmuli_temp)/assets/bib/)
-$(htmlmulti_bib): $(BIB)
-	$(QUIET)$(call echo-run,"Copy bib",$<,$@)
-	$(QUIET)$(call copy-if-exists,$(BIB) $(htmlmuli_temp)/assets/bib/)
+
+$(htmlmulti_bib):$(BIB) | $(BIBFILES)
+	$(QUIET)$(call echo-copy,bib,$<,$@)
+	$(QUIET)$(call copy-if-exists,$(BIB),$(htmlmuli_temp)/assets/bib/)
 
 htmlmulti_css   := $(html_css:$(CSSDIR)/%.css=$(htmlmuli_temp)/assets/css/%.css)
 htmlmulti_dep   += $(htmlmulti_css)
 $(htmlmuli_temp)/assets/css/%.css: $(CSSDIR)/%.css
-	$(QUIET)$(call echo-run,"Copy css",$<,$@)
+	$(QUIET)$(call echo-copy,css,$<,$@)
 	$(QUIET)$(call copy-if-exists,$<,$@)
 
 htmlmulti_fig   := $(fig_$(default_image_extension):$(OUT_FIGDIR)/%.$(default_image_extension)=$(htmlmuli_temp)/assets/fig/%.$(default_image_extension))
 htmlmulti_dep   += $(htmlmulti_fig)
 $(htmlmuli_temp)/assets/fig/%: $(OUT_FIGDIR)/%
-	$(QUIET)$(call echo-run,"Copy fig",$<,$@)
+	$(QUIET)$(call echo-copy,fig,$<,$@)
 	$(QUIET)$(call copy-if-exists,$<,$@)
 	
 $(htmlmuli_temp)/.bundle_installed: | $(htmlmuli_temp)
@@ -1400,7 +1458,7 @@ $(htmlmuli_temp)/.jekyll_installed: |$(htmlmuli_temp) $(htmlmuli_temp)/.bundle_i
 	&& $(TOUCH) $(htmlmuli_temp)/.jekyll_installed
 
 $(htmlmuli_temp)/%.mdh:$(MDHDIR)/%.mdh
-	$(QUIET)$(call echo-run,"Copy mdh",$<,$@)
+	$(QUIET)$(call echo-copy,mdh,$<,$@)
 	$(QUIET)$(call copy-if-exists,$<,$@)
 
 $(htmlmuli_temp)/$(MAIN_DOC_BASENAME).mdh: $(htmlmulti_mdh) $(htmlmuli_temp)/variables.yml 
@@ -1440,6 +1498,9 @@ $(htmlmuli_temp)/%.md:$(htmlmuli_temp)/%.md_tmp $(htmlmuli_temp)/%.mdh
 
 #	$(QUIET)$(SED)  -e 's/\]\s*\[@/; @/g' < $@ > $@.sed && 
 
+tt:
+	$(QUIET)$(ECHO) "$(htmlmulti_dep)"
+	
 .PHONY: run-jekyll 
 run-jekyll: $(htmlmulti_dep)  | $(htmlmuli_temp)/.jekyll_installed 
 	$(QUIET)$(call echo-build,$(JEKYLL),htmlmulti)
@@ -1447,7 +1508,10 @@ run-jekyll: $(htmlmulti_dep)  | $(htmlmuli_temp)/.jekyll_installed
 	$(call remove-temporary-files,$(htmlmuli_temp)/$(MAIN_DOC_BASENAME).mdh) 
 	$(QUIET)cd $(htmlmuli_temp) && $(REAL_JEKYLL) build -d ../../$(CHUNKDIR) && cd -
 
-serve-jekyll:$(htmlmulti_dep)|$(htmlmuli_temp)/.jekyll_installed 
+serve-jekyll:$(htmlmulti_dep)|$(htmlmuli_temp)/.jekyll_installed
+	$(QUIET)$(ECHO) -e "\n########################\n"
+	$(QUIET)$(ECHO) "$(C_WARNING) Jekyll serve watch only already generated documents in '$(htmlmuli_temp)'$(C_RESET)"
+	$(QUIET)$(ECHO) "$(C_WARNING) Live modification of the sources in $(INDIR) are not watched!$(C_RESET)"
 	$(QUIET)$(call echo-build,$(JEKYLL),htmlmulti)
 	$(QUIET)cd $(htmlmuli_temp) && $(REAL_JEKYLL) serve && cd -
 #
@@ -1603,8 +1667,8 @@ pdf
 html
 :  Build the HTML(5) output document:
 
-   -  If `BUILD_HTML_FORMAT=htmlsimple`: a single HTML(5) document are generated using Pandoc.
-   -  If `BUILD_HTML_FORMAT=htmlmulti`: multiple HTML(5) documents are  generated using Jekyll.
+   -  If `BUILD_OUTPUT_MODE=simple`: a single HTML(5) document are generated using Pandoc.
+   -  If `BUILD_OUTPUT_MODE=htmlmulti`: multiple HTML(5) documents are  generated using Jekyll.
 
 docx
 :  Build the MS Word output document
@@ -1682,5 +1746,9 @@ export help_text
 .PHONY: help
 help:
 	$(ECHO) "$$help_text" | $(PANDOC) -s  -f markdown -t man | man -l -
+
+#$(call path-norm,)
+.SECONDEXPANSION:
+$(MAIN_DOC_BASENAME).aux $(MAIN_DOC_BASENAME).bbl:$(BIBFILES:$(BIBDIR)/%=$(ROOTDIR)/$(OUT_BIBDIR)/%)
 
 
