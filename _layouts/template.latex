@@ -386,11 +386,11 @@ $endfor$
 \clearemptydoublepage
 
 $if(abstract)$
-\begin{abstract}
-$abstract$
-\end{abstract}
-$else$
-\hbox{}\pagestyle{empty}
+% TODO: Support for abstract...
+%\begin{abstract}
+%$abstract$
+%\end{abstract}
 $endif$
+\hbox{}\pagestyle{empty}
 
 \end{document}
