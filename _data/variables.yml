@@ -111,5 +111,5 @@ natbib: false
 natbib-options: ['sort','square', 'nonamebreak','comma','numbers']
 biblio-style: 'ieee'
 biblio-dir-prefix: '../'
-
+version: 1.0.1
 ---
