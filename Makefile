@@ -605,7 +605,7 @@ echo-copy     = $(echo_dt) "\t$(C_RUN)>>Copy $1$(if $2,\t$2 $(if $3,--> $3,),)..
 echo-graphic  = $(echo_dt) "$(C_GRAPHIC)++Gen. Fig.++ \t$1 --> $2$(C_RESET)"
 echo-dep      = $(echo_dt) "$(C_DEP)**Deps**\t$1 --> $2$(C_RESET)"
 echo-error    = $(echo_dt) "$(C_ERROR)**ERROR** $1 $(C_RESET)"
-echo-failure  = $(echo_dt) "$(C_ERROR)**FAILED** $1 $(C_RESET)"
+echo-failure  = $(echo_dt) "$(C_FAILURE)**FAILED** $1 $(C_RESET)"
 echo-warning  = $(echo_dt) "$(C_WARNING)**WARNING** $1 $(C_RESET)"
 
 # Display a list of something
@@ -659,7 +659,7 @@ TEXLOG    ?=$(ROOTDIR)/$(TEXDIR)/build.log
 #  -file-line-error: to make sure that we have good line information for error output
 #  -interaction=batchmode: so that we don't stop on errors (we'll parse logs for that)
 #
-# $(call latex,<tex file stem, e.g., $*>,[extra LaTeX args])
+# $(call run-latex,<tex file stem, e.g., $*>,[extra LaTeX args])
 define run-latex
 $(call echo-run,$(latex_build_program),$1); \
 $(latex_build_program) -jobname='$(notdir $1)'\
@@ -794,7 +794,7 @@ endef
 define die-on-no-aux
 if $(call test-not-exists,$1.aux); then \
 	$(call colorize-latex-errors,$1.log); \
-	$(ECHO) "$(C_ERROR)Error: failed to create $1.aux$(C_RESET)"; \
+	$(ECHO) "$(C_FAILURE)Error: failed to create $1.aux$(C_RESET)"; \
 	exit 1; \
 fi
 endef
@@ -1625,6 +1625,11 @@ _all_sources:
 	$(QUIET)$(echo_dt) "== All Sources =="
 	$(QUIET)$(call echo-list,$(sort $(files_sources)))
 
+VERSION !=$(CAT) VERSION
+version: VERSION
+	$(QUIET)$(echo_dt) "version: v$(VERSION)"
+	$(SED) -i 's/"version": .*/"version": "$(VERSION)",/' package.json
+	$(SED) -i 's/version: .*/version: $(VERSION)/' $(VARSDATA)
 #
 # HELP TEXT
 #
