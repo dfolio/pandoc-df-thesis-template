@@ -245,8 +245,7 @@ XINDY     ?= xindy
 KPSEWHICH ?= kpsewhich
 # == Makefile Color Output
 TPUT      ?= tput
-# == Figures Generation
-ASYMPTOTE ?= asy
+# == Figures Generation/Conversion
 CONVERT   ?= convert      # ImageMagick
 INKSCAPE  ?= inkscape -z  # Inkscape (svg support)
 SVGO      ?= svgo         # SVG optimizer/minification
@@ -1608,6 +1607,17 @@ _check_programs:
 	for p in $${allprogs}; do \
 	case $$p in \
 		=*) $(ECHO); $(ECHO) "$$p";; \
+		'$$(NODEDIR)'*)\
+		  node=`$(ECHO) $$p| $(SED) -e 's|\$$(NODEDIR)|$(NODEDIR)|g'`;\
+		  np=`basename $$node`;\
+		   $(ECHO) -n "$$np:$$spaces" | $(SED) -e 's/^\(.\{0,20\}\).*$$/\1/'; \
+			loc=`$(WHICH) $$node`; \
+			if [ x"$$?" = x"0" ]; then \
+				$(ECHO) "$(C_SUCCESS)Found:$(C_RESET) $$loc"; \
+			else \
+				$(ECHO) "$(C_FAILURE)Not Found$(C_RESET)"; \
+			fi; \
+			;; \
 		*) \
 			$(ECHO) -n "$$p:$$spaces" | $(SED) -e 's/^\(.\{0,20\}\).*$$/\1/'; \
 			loc=`$(WHICH) $$p`; \
@@ -1625,7 +1635,8 @@ _all_sources:
 	$(QUIET)$(echo_dt) "== All Sources =="
 	$(QUIET)$(call echo-list,$(sort $(files_sources)))
 
-VERSION !=$(CAT) VERSION
+VERS_FILE=$(ROOTDIR)/VERSION
+VERSION !=$(CAT) $(VERS_FILE)
 version: VERSION
 	$(QUIET)$(echo_dt) "version: v$(VERSION)"
 	$(SED) -i 's/"version": .*/"version": "$(VERSION)",/' package.json
