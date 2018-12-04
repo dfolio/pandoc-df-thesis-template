@@ -14,8 +14,8 @@
 # SIMPLE CONFIGURATION #########################################################
 
 #Select the output mode for HTML and TeX 
-BUILD_OUTPUT_MODE    ?= multi
-#BUILD_OUTPUT_MODE   ?= simple
+#BUILD_OUTPUT_MODE    ?= multi
+BUILD_OUTPUT_MODE   ?= simple
 #Select the prefered build strategy
 #BUILD_TEX_STRATEGY  ?= pdflatex
 BUILD_TEX_STRATEGY  ?= lualatex
