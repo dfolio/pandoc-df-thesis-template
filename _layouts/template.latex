@@ -265,13 +265,13 @@ $endif$
 $endif$
 
 \IfFileExists{pandoc-df-thesis.sty}{\usepackage{pandoc-df-thesis}
-\IfFileExists{pandoc-df-thesis-theme.sty}{\usepackage{pandoc-df-thesis-theme}}{}
-\IfFileExists{pandoc-df-thesis-macros.sty}{\usepackage{pandoc-df-thesis-macros}}{}
+  \IfFileExists{pandoc-df-thesis-theme.sty}{\usepackage{pandoc-df-thesis-theme}}{}
+  \IfFileExists{pandoc-df-thesis-macros.sty}{\usepackage{pandoc-df-thesis-macros}}{}
 }{
 \GenericError{\jobname}{\jobname{} Error: no 'pandoc-df-thesis.sty' package}
   {'pandoc-df-thesis.sty' base package must be present to compile \jobname{} }
   {Sorry, 'pandoc-df-thesis.sty' package must be available in your TEXMF PATH to compile \jobname.}
-  
+}
 $for(header-includes)$
 $header-includes$
 $endfor$
