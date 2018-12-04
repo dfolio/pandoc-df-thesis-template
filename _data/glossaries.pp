@@ -139,6 +139,7 @@
 </glossdiv>
 <glossdiv><title xml:id='sec-glos-glg'>List of Terms</title>
 ~~~~~~~~~~~~~~
+
 \GlossEntry{cell}{cell}
 ~~~~~~~~~~~~~~
 The cell is the basic structural, functional, and biological unit of all known living organisms.

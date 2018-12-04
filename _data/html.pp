@@ -35,8 +35,12 @@ A set of macros for pandoc HTML output
 \define{num}{Latex siunitx}{<span class="number">\1</span>}
 \define{si}{Latex siunitx}{<span class="unit">\1</span>}
 \define{SI}{Latex siunitx}{<span class="number">\1</span><span class="unit">\2</span>}
+\define{cubic}{\1^3^}
+\define{per}{/}
+\define{kilo}{k}
+\define{micro}{µ}
+\define{gram}{g}
 \define{year}{year}
 \define{years}{years}
 \define{hour}{h}
-\define{micro}{µ}
 \define{metre}{m}
