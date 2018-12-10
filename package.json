@@ -1,6 +1,6 @@
 {
   "name": "pandoc-df-thesis-template",
-  "version": "0.3.1",
+  "version": "1.0.1",
   "description": "D. Folio template for writing a thesis dissertation using [Pandoc](http://pandoc.org)",
   "main": "index.js",
   "repository": {
