@@ -15,7 +15,8 @@
 
 #Select the output mode for HTML and TeX 
 #BUILD_OUTPUT_MODE    ?= multi
-BUILD_OUTPUT_MODE   ?= simple
+BUILD_OUTPUT_MODE   ?= single
+
 #Select the prefered build strategy
 #BUILD_TEX_STRATEGY  ?= pdflatex
 BUILD_TEX_STRATEGY  ?= lualatex
@@ -106,8 +107,9 @@ TEMPLATEJEKYLLDIR   ?= $(TEMPLATEDIR)/jekyll
 # data, variables, macros, glossaries should be placed in DATADIR
 DATADIR     ?=_data
 # various stuff can be placed ASSETSDIR such as bib, media, fonts...
-# but, "publishable" (eg. in case of html outputs) files must be placed in "$(OUTDIR)/$(ASSETSDIR)"
-# Some subdir of the initial ASSETSDIR could be copied   "$(OUTDIR)/$(ASSETSDIR)"
+# but, "publishable" (eg. in case of html outputs) files must be placed 
+# in "$(OUT_ASSETSDIR)"
+# Some subdir of the initial ASSETSDIR could be copied   "$(OUT_ASSETSDIR)"
 ASSETSDIR       ?=assets
 OUT_ASSETSDIR   ?=$(OUTDIR)/$(ASSETSDIR)
 BIBDIR      ?=$(ASSETSDIR)/bib
@@ -127,12 +129,12 @@ HTMLMULTIDIR?=$(OUTDIR)/html
 XMLDIR      ?=$(OUTDIR)
 CHUNKDIR    ?=$(HTMLMULTIDIR)
 # SASS/CSS dirs 
-CSSDIR      ?=$(OUTDIR)/$(ASSETSDIR)/css
+CSSDIR      ?=$(OUT_ASSETSDIR)/css
 SCSSDIR     ?=$(ASSETSDIR)/scss
-SASSDIR     ?=_sass
+SASSDIR     ?=$(ASSETSDIR)/scss#deprecated: future removal!
 # created by npm (nodejs)
 NODEDIR     ?=node_modules
-SCSSINCS    ?=$(SASSDIR) $(NODEDIR)/bootstrap/scss
+SCSSINCS    ?=$(SCSSDIR) $(NODEDIR)/bootstrap/scss
 
 prepare_targets+=$(NODEDIR)/bootstrap/
 
@@ -932,7 +934,7 @@ endif
 files_mdx             := $(files_noext:$(INDIR)/%=$(MDXDIR)/%.mdx)
 
 # SCSS/CSS files
-files_scss        := $(wildcard $(SCSSDIR)/*.scss)
+files_scss        := $(filter-out $(SCSSDIR)/_%.scss,$(wildcard $(SCSSDIR)/*.scss))
 files_css         := $(patsubst $(SCSSDIR)/%.scss,$(CSSDIR)/%.css,$(files_scss))
 html_css          := $(filter %html.css,$(files_css))
 
@@ -1031,7 +1033,7 @@ watch-pdf:
 endif
 
 test:
-	$(QUIET)$(ECHO) "fig_svg  $(html_deps) "
+	$(QUIET)$(ECHO) "files_scss  $(files_scss) "
 ################################################################################
 # MAIN TARGETS
 #
@@ -1040,7 +1042,7 @@ test:
 .PHONY: html
 #.SECONDARY: $(HTMLDIR)/$(MAIN_DOC_BASENAME).html
 html:$(html_deps)
-ifeq ($(BUILD_OUTPUT_MODE), simple)
+ifeq ($(BUILD_OUTPUT_MODE), single)
 	$(QUIET)$(MAKE) $(HTMLDIR)/$(MAIN_DOC_BASENAME).html
 endif
 ifeq ($(BUILD_OUTPUT_MODE),multi)
@@ -1053,7 +1055,7 @@ endif
 html-deps:$(html_deps)
 	$(QUIET)$(call echo-dep,html,$(html_deps))
 
-ifeq ($(BUILD_OUTPUT_MODE), simple)
+ifeq ($(BUILD_OUTPUT_MODE), single)
 html_deps += $(TEMPLATEDIR)/template.html5
 $(HTMLDIR)/$(MAIN_DOC_BASENAME).html: $(html_deps)
 	$(QUIET)$(call echo-run,$(PANDOC),,$@)
@@ -1151,7 +1153,7 @@ $(TEXDIR)/$(MAIN_DOC_BASENAME).pdf:$(call path-norm,$(TEXDIR)/$(MAIN_DOC_BASENAM
 
 tex: $(TEXDIR)/$(MAIN_DOC_BASENAME).tex
 
-ifeq ($(BUILD_OUTPUT_MODE), simple)
+ifeq ($(BUILD_OUTPUT_MODE), single)
 $(TEXDIR)/$(MAIN_DOC_BASENAME).tex: $(files_frontmatter_tex) $(files_backmatter_tex) $(tex_deps)
 	$(QUIET)$(call echo-build,LaTeX files,$@)
 	$(QUIET)$(call echo-run,$(PANDOC),...,$@)
@@ -1683,7 +1685,7 @@ pdf
 html
 :  Build the HTML(5) output document:
 
-   -  If `BUILD_OUTPUT_MODE=simple`: a single HTML(5) document are generated using Pandoc.
+   -  If `BUILD_OUTPUT_MODE=single`: a single HTML(5) document are generated using Pandoc.
    -  If `BUILD_OUTPUT_MODE=htmlmulti`: multiple HTML(5) documents are  generated using Jekyll.
 
 docx
