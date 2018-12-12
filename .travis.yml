@@ -4,6 +4,15 @@ branches:
   only:
   - master     # test the master branch
 
+matrix:
+  fast_finish: true
+
+cache:
+  bundler: true
+  apt: true
+#  directories:
+#  - "node_modules"
+  
 before_install:
 - sudo apt-get update -qq
 - sudo apt-get install -y pandoc
