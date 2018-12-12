@@ -146,7 +146,7 @@ prepare_targets+=$(NODEDIR)/bootstrap/
 
 # Sets LC_ALL=C, by default, so that the locale-aware tools, like sort, be
 # immune to changes to the locale in the user environment.
-export LC_ALL ?= C
+export LC_ALL := C
 
 # Sources files patterns that will be searched in INDIR
 # This is for automatically definition of the sources files.
@@ -167,7 +167,9 @@ VARSDATA    ?=$(DATADIR)/variables.yml
 BIBFILES    ?=$(BIBDIR)/string.bib $(BIBDIR)/thesis-biblio.bib
 ## Where all bibliographies are merged
 BIB         ?=$(OUT_BIBDIR)/bibliography.bib
-CSL          ?=$(TEMPLATEDIR)/Thesis-ieee-style.csl
+## The Citation Style Language (CSL) for formatting of citations and bibliographies. 
+CSL         ?=$(BIBDIR)/Thesis-ieee-style.csl
+## The DocBook stylesheets to generate HTML chunks 
 XSL         ?=$(TEMPLATEDIR)/xsl/html5.xsl
 
 # preprocessor macros
@@ -180,17 +182,14 @@ PP_XML_MACROS   ?=$(DATADIR)/xml.pp
 PP_TEX_MACROS    ?=$(DATADIR)/latex.pp
 
 ### PP-Macros
-
 ## Glossaries files formatted with pp preprocessor
 GLOSSARIES      ?=$(DATADIR)/glossaries.pp
-
 ## The generated glossaries for HTML outputs
 ## Set the digit to position properly the glossaries in either the front matter
 ## or in the back matter (default: 97)  
 GLOSSARIES_MDH  ?=$(MDHDIR)/97_glossaries.mdh
 GLOSSARIES_XML  ?=$(XMLDIR)/glossaries.xml
 GLOSSARIES_TEX  ?=$(TEXDIR)/glossaries.tex
-
 PP_GLO_HTML     ?=$(HTMLDIR)/_glo-html.pp
 PP_GLO_XML      ?=$(XMLDIR)/_glo-xml.pp
 
@@ -436,6 +435,14 @@ sh_false := ! :
 # Clear out the standard interfering make suffixes
 .SUFFIXES:
 
+# Try to get full path of command
+# $(call real-cmd,cmd)  
+real-cmd=$(shell $(WHICH) $(strip $1) 2>/dev/null)
+
+# Test if command is available or not
+# $(call have-cmd,cmd) 
+have-cmd=$(if $(call real-cmd,$1),:,)
+
 # Turn off forceful rm (RM is usually mapped to rm -f)
 ifdef SAFE_RM
 RM  := rm
@@ -453,7 +460,7 @@ remove-files        = $(call remove-files-helper,$(wildcard $1))
 # Works exactly like remove-files, but filters out files in $(neverclean)
 clean-files    = \
   $(if $(VERBOSE),\
-  $(echo_dt) "$(C_WARNING)Clean files '$1'$(C_RESET)",:); \
+  $(echo_dt) "$(C_WARNING)Clean files '$1'$(reset)",:); \
   $(call remove-files,$(call cleanable-files,$(wildcard $1)))
 
 # $(call remove-temporary-files,filenames)
@@ -473,8 +480,9 @@ test-exists-and-different  = $(call test-exists,$2) && $(call test-different,$1,
 # $(call move-files,source,destination)
 move-if-exists            = $(call test-exists,$1) && $(MV) '$(strip $1)' '$(strip $2)'
 
-# Use RSYNC instead of simple CP to allow remote copying 
-USE_RSYNC := $(if $(shell $(WHICH) $(RSYNC) 2>/dev/null),yes,)
+# Use RSYNC instead of simple cp to allow remote copying
+# If no RSYNC is available back to cp
+USE_RSYNC := $(call have-cmd,$(RSYNC))
 define copy-helper
 $(if $(USE_RSYNC),\
   $(RSYNC) $(RSYNC_FLAGS) '$(strip $1)' '$(strip $2)',\
@@ -519,9 +527,7 @@ cleanable-files = $(filter-out $(wildcard $(neverclean)), $1)
 
 # Find files
 # $(call find-files,in_dir,with_pattern)
-define find-files
-$(FIND) $1 -name $2 -type f -prune  -print| $(SORT) | $(UNIQ)
-endef
+find-files=$(FIND) $1 -name $2 -type f -prune  -print| $(SORT) | $(UNIQ)
 
 # Terminal color definitions
 REAL_TPUT := $(if $(NO_COLOR),,$(shell $(WHICH) $(TPUT)))
@@ -551,80 +557,53 @@ bold    := $(call get-term-code,bold)
 uline   := $(call get-term-code,smul)
 reset   := $(call get-term-code,sgr0)
 
-#
-# User-settable definitions
-#
-MSG_COLOR_WARNING   ?= magenta
-MSG_COLOR_CLEAN     ?= bg_white magenta
-MSG_COLOR_DISTCLEAN ?= bg_white magenta bold
-MSG_COLOR_ERROR     ?= red
-MSG_COLOR_INFO      ?= green
-MSG_COLOR_UNDERFULL ?= magenta
-MSG_COLOR_OVERFULL  ?= red bold
-MSG_COLOR_PAGES     ?= bold
-MSG_COLOR_BUILD     ?= blue
-MSG_COLOR_RUN       ?= cyan
-MSG_COLOR_GRAPHIC   ?= yellow
-MSG_COLOR_DEP       ?= green
-MSG_COLOR_SUCCESS   ?= green bold
-MSG_COLOR_FAILURE   ?= red bold
-
-# Gets the real color from a simple textual definition like those above
-# $(call get-color,ALL_CAPS_COLOR_NAME)
-# e.g., $(call get-color,WARNING)
-get-color  = $(subst $(space),,$(foreach c,$(MSG_COLOR_$1),$($c)))
-
-#
 # STANDARD COLORS
-#
+C_ERROR     := $(red)$(bold)
+C_WARNING   := $(magenta)
+C_INFO      := $(green)
 C_BOLD      := $(bold)
-C_WARNING   := $(call get-color,WARNING)
-C_ERROR     := $(call get-color,ERROR)
-C_INFO      := $(call get-color,INFO)
-C_UNDERFULL := $(call get-color,UNDERFULL)
-C_OVERFULL  := $(call get-color,OVERFULL)
-C_PAGES     := $(call get-color,PAGES)
-C_BUILD     := $(call get-color,BUILD)
-C_RUN       := $(call get-color,RUN)
-C_GRAPHIC   := $(call get-color,GRAPHIC)
-C_DEP       := $(call get-color,DEP)
-C_SUCCESS   := $(call get-color,SUCCESS)
-C_FAILURE   := $(call get-color,FAILURE)
-C_CLEAN     := $(call get-color,CLEAN)
-C_DISTCLEAN := $(call get-color,DISTCLEAN)
-C_RESET     := $(reset)
-C_INDENT    := $(shell printf "%${i}s" '')
 
+# date-time
 get_date_time   = $(DATE) +"%F %T"
 
 # Display information about what is being done
-echo_dt       = $(ECHO) -e "$(black)$(shell $(get_date_time))$(C_RESET)"
-# $(call echo-build,<input file>,<output file>,[<run number>])
-echo-build    = $(echo_dt) "\t$(C_BUILD)$(bold)==Build==$(C_RESET)$(C_BUILD)\t$1 --> $2$(if $3, ($3),)...$(C_RESET)"
-echo-run      = $(echo_dt) "\t$(C_RUN)>>$(bold)Run $1$(C_RESET)$(C_RUN)$(if $2,\t$2 $(if $3,--> $3,),)...$(C_RESET)"
-echo-copy     = $(echo_dt) "\t$(C_RUN)>>Copy $1$(if $2,\t$2 $(if $3,--> $3,),)...$(C_RESET)"
-echo-graphic  = $(echo_dt) "$(C_GRAPHIC)++Gen. Fig.++ \t$1 --> $2$(C_RESET)"
-echo-dep      = $(echo_dt) "$(C_DEP)**Deps**\t$1 --> $2$(C_RESET)"
-echo-error    = $(echo_dt) "$(C_ERROR)**ERROR** $1 $(C_RESET)"
-echo-failure  = $(echo_dt) "$(C_FAILURE)**FAILED** $1 $(C_RESET)"
-echo-warning  = $(echo_dt) "$(C_WARNING)**WARNING** $1 $(C_RESET)"
+echo_dt       = $(ECHO) -e "$(white)$(shell $(get_date_time))$(reset)"
+# $(call echo-error,<msg>)
+echo-error    = $(echo_dt) "$(C_ERROR)**ERROR** $1$(reset)"
+echo-warning  = $(echo_dt) "$(C_WARNING)**WARNING** $1$(reset)"
+echo-info     = $(echo_dt) "$(C_INFO)$1$(reset)"
+echo-success  = $(echo_dt) "$(green)$(bold)$1$(reset)"
+echo-failure  = $(echo_dt) "$(red)$(bold)$1$(reset)"
+
+
+# $(call echo-build,<target>,[<run number>])
+echo-build    = $(echo_dt) "\t$(blue)$(bold)==Build==$(reset)$(blue)\t$2$(if $3, ($3),)...$(reset)"
+# $(call echo-run,<prog>,<arg>)
+echo-run      = $(echo_dt) "\t$(cyan)>>$(bold)Run $1$(reset)$(cyan)$(if $2,\t$2,)...$(reset)"
+# $(call echo-copy,src,dest)
+echo-copy     = $(echo_dt) "\t$(cyan)>>Copy $1$(if $2,\t$2 $(if $3,--> $3,),)...$(reset)"
+# $(call echo-copy,src,dest)
+echo-fig      = $(echo_dt) "$(yellow)++Gen. Fig.++$(reset)\t$1 --> $2$(reset)"
+echo-dep      = $(echo_dt) "$(green)//Deps//$(reset)\t$1$(if $2,\t$2,)$(reset)"
 
 # Display a list of something
-# $(call echo-list,<values>)
+# $(call echo-list,<list>)
 echo-list  = for x in $1; do $(ECHO) "$$x"; done
 
+# Display success/failure at end target 
 define echo-end-target
 $(call test-exists,$1)&& \
-  $(echo_dt) "$(C_SUCCESS) Successfully generated $1$(C_RESET)" ||\
-  $(echo_dt) "$(C_FAILURE) Fail to generate $1!!!$(C_RESET)" 
+  $(call echo-success,Successfully generated $1) ||\
+  $(call echo-failure,Fail to generate $1!!!) 
 endef
 
 #
 # EXTERNAL PROGRAM DOCUMENTATION SCRIPT
 #
+
 # If cygpath is present, then we create a path-norm function that uses it,
 # otherwise the function is just a no-op.  Issue 112 has details.
-USE_CYGPATH := $(if $(shell $(WHICH) $(CYGPATH) 2>/dev/null),yes,)
+USE_CYGPATH := $(call have-cmd,$(CYGPATH))
 define path-norm
 $(if $(USE_CYGPATH),$(shell $(CYGPATH) -u "$1"),$1)
 endef
@@ -639,7 +618,7 @@ define output-all-programs
     -e '/^[[:space:]]*#/i\ '\
     -e 's/^[[:space:]]*#[[:space:]][^=]*//' \
     $(this_file) $(if $1,> '$1',) || \
-  $(ECHO) "Cannot determine the name of this makefile."
+  $(call echo-error,Cannot determine the name of this makefile.)
 endef
 
 WRITE_LOG ?=
@@ -780,7 +759,7 @@ $(SED) \
 -e ':skip' \
 -e 'd' \
 -e ':error' \
--e 's/^!\(!! \)\{0,1\}\(.*\)/$(C_ERROR)\2$(C_RESET)/' \
+-e 's/^!\(!! \)\{0,1\}\(.*\)/$(C_ERROR)\2$(reset)/' \
 -e 'p' \
 -e 'd' \
 '$1' | $(SED) -e 's/\\\\/\\\\\\\\/g'
@@ -795,7 +774,7 @@ endef
 define die-on-no-aux
 if $(call test-not-exists,$1.aux); then \
 	$(call colorize-latex-errors,$1.log); \
-	$(ECHO) "$(C_FAILURE)Error: failed to create $1.aux$(C_RESET)"; \
+	$(call echo-error,Error: unable to create $1.aux); \
 	exit 1; \
 fi
 endef
@@ -826,13 +805,13 @@ endef
 # Colorize BibTeX output.
 color_bib := \
 $(SED) \
--e 's/^Warning--.*/$(C_WARNING)&$(C_RESET)/' \
+-e 's/^Warning--.*/$(C_WARNING)&$(reset)/' \
 -e 't' \
 -e '/---/,/^.[^:]/{' \
 -e '  H' \
 -e '  /^.[^:]/{' \
 -e '    x' \
--e '    s/\n\(.*\)/$(C_ERROR)\1$(C_RESET)/' \
+-e '    s/\n\(.*\)/$(C_ERROR)\1$(reset)/' \
 -e '    p' \
 -e '    s/.*//' \
 -e '    h' \
@@ -840,7 +819,7 @@ $(SED) \
 -e '  }' \
 -e '  d' \
 -e '}' \
--e '/(.*error.*)/s//$(C_ERROR)&$(C_RESET)/' \
+-e '/(.*error.*)/s//$(C_ERROR)&$(reset)/' \
 -e 'd'
 
 # BibTeX invocations
@@ -871,18 +850,24 @@ define convert-raw
 $(CONVERT) '$(strip $1)' $(if $(filter-out ,$3$(GRAY)),-type Grayscale,) '$(strip $2)'
 endef
 
+USE_INKSCAPE :=$(call have-cmd,$(INKSCAPE))
+ifeq ($(USE_INKSCAPE),:)
 define get-inkscape-export
 --export-$(strip $(if $(filter %.pdf,$1),pdf,$(if $(filter %.emf,$1),emf,$(if $(filter %.eps,$1),eps,\
 $(if $(filter %.svg,$1),plain-svg,\
-$(error "$(C_ERROR)Unsupported $(INKSCAPE) export '$1'$(C_RESET)"))))))
+$(error "$(C_ERROR)Unsupported $(INKSCAPE) export '$1'$(reset)"))))))
 endef
 INKSCAPE_FLAGS  +=--vacuum-defs --export-area-page
-# Creation from  raw image, .jpg/.jpeg/.png/.tif/etc. files
-#
+# Creation from svg files
 # $(call convert-svg,<svg>,<out_fig>, $(GRAY))
 define convert-svg
 $(INKSCAPE) $(INKSCAPE_FLAGS) '$(strip $1)' $(call get-inkscape-export,$2)='$(strip $2)'
 endef
+else
+define convert-svg
+$(call convert-raw,$1,$2,$3)
+endef
+endif
 
 ###############################################################################
 # VARIABLE DECLARATIONS
@@ -1033,7 +1018,7 @@ watch-pdf:
 endif
 
 test:
-	$(QUIET)$(ECHO) "files_scss  $(files_scss) "
+	$(QUIET)$(ECHO) "cmd:$(call convert-svg,boo,foo.pdf) " 
 ################################################################################
 # MAIN TARGETS
 #
@@ -1107,11 +1092,15 @@ $(OUTDIR)/$(MAIN_DOC_BASENAME).odt:$(odt_deps)
 xml: $(XMLDIR)/$(MAIN_DOC_BASENAME).xml
 	$(QUIET)$(call echo-warning,"XML/DocBook outputs are unmaintened") 
 xml-chunk:$(XMLDIR)/$(MAIN_DOC_BASENAME).xml
+ifeq ($(call have-cmd,$(XSLTPROC)),:)
 	$(QUIET)$(call echo-warning,"XML/DocBook outputs are unmaintened") 
 	$(QUIET)$(MKDIR) $(CHUNKDIR)/
 	$(QUIET)$(call echo-run,$(XSLTPROC),,$@)
 	$(QUIET)$(XSLTPROC) $(XSLT_FLAGS) -o $(CHUNKDIR)/ $(XSL) $<
-
+else
+	$(QUIET)$(call echo-failure,"it seems that you don\'t have xsltrproc on your system.")
+	$(QUIET)$(call echo-failure,"HTML/chunk from docbook is not available!!!") 
+endif
 $(XMLDIR)/$(MAIN_DOC_BASENAME).xml: $(xml_deps)
 	$(QUIET)$(call echo-warning,"XML/DocBook '$@' is unmaintened") 
 	$(QUIET)$(call echo-run,$(PANDOC),,$@)
@@ -1146,7 +1135,7 @@ $(TEXDIR)/$(MAIN_DOC_BASENAME).pdf:$(call path-norm,$(TEXDIR)/$(MAIN_DOC_BASENAM
 	  BUILD_BIB_STRATEGY='$(strip $(call get-bib-strategy,$(TEXDIR)/$(MAIN_DOC_BASENAME).tex))' \
 	"$(MAIN_DOC_BASENAME).pdf" && cd -
 	$(call echo-end-target,$@)
-#	$(QUIET)$(ECHO) "$(C_FAILURE) build of $@ not yet implemented$(C_RESET)"
+#	$(QUIET)$(ECHO) "$(C_FAILURE) build of $@ not yet implemented$(reset)"
 
 .SECONDARY: $(TEXDIR)/$(MAIN_DOC_BASENAME).pdf \
   $(TEXDIR)/$(MAIN_DOC_BASENAME).tex 
@@ -1216,7 +1205,7 @@ endef
 	fi; \
 	for i in 2 3 4; do \
 		if $(call test-run-again,$*); then \
-	    $(echo_dt) "$(C_INFO)Need to re-run LaTeX...$(C_RESET)";\
+	    $(echo_dt) "$(C_INFO)Need to re-run LaTeX...$(reset)";\
 			$(call echo-build,$<,$*.pdf,$$i); \
 			$(call run-latex,$*); \
 		else \
@@ -1242,7 +1231,7 @@ endif
 
 %.aux %.bcf %.fls:%.tex
 	$(QUIET)$(call echo-build,$<,$*.pdf,1);\
-	$(echo_dt) "$(C_INFO)Create/Update $*.aux $*.bcf and $*.fls$(C_RESET)";\
+	$(echo_dt) "$(C_INFO)Create/Update $*.aux $*.bcf and $*.fls$(reset)";\
 	$(call run-latex,$*,-recorder)|| $(sh_true); \
 	$(call die-on-no-aux,$*) ;\
 	fatal=`$(call colorize-latex-errors,$*.log)`; \
@@ -1319,15 +1308,15 @@ $(CSSDIR)/%.css:$(SCSSDIR)/%.scss $(css_deps)
 
 .SECONDARY:  $(NODEDIR)/bootstrap/scss
 $(NODEDIR)/bootstrap/scss: $(NODEDIR)/bootstrap/
-	$(QUIET)$(ECHO) "$(C_INFO) Bootstrap is in '$(NODEDIR)/bootstrap/' folder$(C_RESET)"
+	$(QUIET)$(ECHO) "$(C_INFO) Bootstrap is in '$(NODEDIR)/bootstrap/' folder$(reset)"
 	$(QUIET)$(NPM) update bootstrap
 
 $(SASS):$(NODEDIR)/sass
-	$(QUIET)$(ECHO) "$(C_INFO) SASS is  in '$(NODEDIR)/sass'$(C_RESET)"
+	$(QUIET)$(ECHO) "$(C_INFO) SASS is  in '$(NODEDIR)/sass'$(reset)"
 
 # get bootstrap and its dependancies
 #bootstrap:$(NODEDIR)/bootstrap/
-#	$(QUIET)$(ECHO) "$(C_INFO) Bootstrap is in '$(NODEDIR)/bootstrap'$(C_RESET)"
+#	$(QUIET)$(ECHO) "$(C_INFO) Bootstrap is in '$(NODEDIR)/bootstrap'$(reset)"
 ################################################################################
 #  Intermediate Figures rules
 # Converts svg files into .eps files
@@ -1335,7 +1324,7 @@ $(SASS):$(NODEDIR)/sass
 .PHONY: svg
 svg:$(fig_svg) $(OUT_FIGDIR)
 $(OUT_FIGDIR)/%.svg:$(MEDIADIR)/%.svg
-	$(QUIET)$(call echo-graphic,$^,$<,$@)
+	$(QUIET)$(call echo-fig,$^,$<,$@)
 	$(QUIET)$(call convert-svg,$<,$@)
 ifeq "$(if $(shell $(WHICH) $(SVGO) 2>/dev/null),1,)" "1"
 	$(QUIET)$(SVGO) --enable={cleanupIDs,collapseGroups,removeUnusedNS,removeUselessStrokeAndFill,removeUselessDefs,removeComments,removeMetadata,removeEmptyAttrs,removeEmptyContainers} $@
@@ -1348,29 +1337,29 @@ ifeq "$(if $(shell $(WHICH) $(SCOUR) 2>/dev/null),1,)" "1"
 endif
 
 $(OUT_FIGDIR)/%.svg:$(MEDIADIR)/%.png
-	$(QUIET)$(call echo-graphic,$^,$@)
+	$(QUIET)$(call echo-fig,$^,$@)
 	$(QUIET)$(call convert-raw,$<,$@,$(GRAY))
 $(OUT_FIGDIR)/%.svg:$(MEDIADIR)/%.jpg
-	$(QUIET)$(call echo-graphic,$^,$@)
+	$(QUIET)$(call echo-fig,$^,$@)
 	$(QUIET)$(call convert-raw,$<,$@,$(GRAY))
 $(OUT_FIGDIR)/%.svg:$(MEDIADIR)/%.tif
-	$(QUIET)$(call echo-graphic,$^,$@)
+	$(QUIET)$(call echo-fig,$^,$@)
 	$(QUIET)$(call convert-raw,$<,$@,$(GRAY))
 
 $(OUT_FIGDIR)/%.pdf:$(MEDIADIR)/%.svg
-	$(QUIET)$(call echo-graphic,$^,$@)
+	$(QUIET)$(call echo-fig,$^,$@)
 	$(QUIET)$(call convert-svg,$<,$@)
 	
 $(OUT_FIGDIR)/%.pdf:$(OUT_FIGDIR)/%.svg
-	$(QUIET)$(call echo-graphic,$^,$@)
+	$(QUIET)$(call echo-fig,$^,$@)
 	$(QUIET)$(call convert-svg,$<,$@)
 	
 $(OUT_FIGDIR)/%.emf:$(MEDIADIR)/%.svg
-	$(QUIET)$(call echo-graphic,$^,$@)
+	$(QUIET)$(call echo-fig,$^,$@)
 	$(QUIET)$(call convert-svg,$<,$@)
 	
 $(OUT_FIGDIR)/%.emf:$(OUT_FIGDIR)/%.svg
-	$(QUIET)$(call echo-graphic,$^,$@)
+	$(QUIET)$(call echo-fig,$^,$@)
 	$(QUIET)$(call convert-svg,$<,$@)
 
 ################################################################################
@@ -1388,10 +1377,10 @@ $(dir_prep):
 
 # Install a npm module
 $(NODEDIR)/%/:
-	$(QUIET)$(ECHO) "$(C_INFO) $* will be installed in the local folder$(C_RESET)"
+	$(QUIET)$(ECHO) "$(C_INFO) $* will be installed in the local folder$(reset)"
 	$(QUIET)$(call echo-run,$(NPM)++,$*,$@)
 	$(QUIET)$(NPM) install $*
-	$(QUIET)$(ECHO) "$(C_INFO) $* now in '$@'$(C_RESET)"
+	$(QUIET)$(ECHO) "$(C_INFO) $* now in '$@'$(reset)"
 
 ifeq ($(BUILD_OUTPUT_MODE),multi)
 REAL_BUNDLE   := $(shell $(WHICH) $(BUNDLE))
@@ -1404,7 +1393,7 @@ htmlmulti_dep += $(htmlmuli_temp) $(htmlmuli_temp)/$(MAIN_DOC_BASENAME).mdh\
   $(htmlmulti_md) $(htmlmuli_temp)/.synced
 
 $(htmlmuli_temp):
-	$(QUIET)$(echo_dt) "$(C_BUILD)Prepare 'htmlmuti' output with jekyll in '$(htmlmuli_temp)' $(C_RESET)"
+	$(QUIET)$(echo_dt) "$(C_BUILD)Prepare 'htmlmuti' output with jekyll in '$(htmlmuli_temp)' $(reset)"
 	$(QUIET)$(MKDIR) $(htmlmuli_temp)
 $(htmlmuli_temp)/.synced: $(htmlmuli_temp) $(wildcard $(TEMPLATEJEKYLLDIR)/*)
 	$(QUIET)$(call echo-copy,Jekyll,$<,$@)
@@ -1511,8 +1500,8 @@ run-jekyll: $(htmlmulti_dep)  | $(htmlmuli_temp)/.jekyll_installed
 
 serve-jekyll:$(htmlmulti_dep)|$(htmlmuli_temp)/.jekyll_installed
 	$(QUIET)$(ECHO) -e "\n########################\n"
-	$(QUIET)$(ECHO) "$(C_WARNING) Jekyll serve watch only already generated documents in '$(htmlmuli_temp)'$(C_RESET)"
-	$(QUIET)$(ECHO) "$(C_WARNING) Live modification of the sources in $(INDIR) are not watched!$(C_RESET)"
+	$(QUIET)$(ECHO) "$(C_WARNING) Jekyll serve watch only already generated documents in '$(htmlmuli_temp)'$(reset)"
+	$(QUIET)$(ECHO) "$(C_WARNING) Live modification of the sources in $(INDIR) are not watched!$(reset)"
 	$(QUIET)$(call echo-build,$(JEKYLL),htmlmulti)
 	$(QUIET)cd $(htmlmuli_temp) && $(REAL_JEKYLL) serve && cd -
 #
@@ -1523,45 +1512,45 @@ endif
 .PHONY: clean-all clean-html
 clean: clean-files clean-aux clean-bib clean-mdt clean-mdh clean-css clean-fig ;
 clean-files:
-	$(QUIET)$(echo_dt) "$(C_WARNING) Cleaning unnecessary documents...$(C_RESET)"
+	$(QUIET)$(echo_dt) "$(C_WARNING) Cleaning unnecessary documents...$(reset)"
 	$(call clean-files,$(clean_files))
 
 clean-aux:
-	$(QUIET)$(echo_dt) "$(C_WARNING) Cleaning LaTeX intermediates...$(C_RESET)"
+	$(QUIET)$(echo_dt) "$(C_WARNING) Cleaning LaTeX intermediates...$(reset)"
 	$(call clean-files,$(clean_tex_aux_files))
 clean-bib:
-	$(QUIET)$(echo_dt) "$(C_WARNING) Cleaning Bib intermediates...$(C_RESET)"
+	$(QUIET)$(echo_dt) "$(C_WARNING) Cleaning Bib intermediates...$(reset)"
 	$(call clean-files,$(clean_tex_bib_files))
 	
 clean-mdt:
-	$(QUIET)$(echo_dt) "$(C_WARNING) Cleaning Markdown/Html intermediates...$(C_RESET)"
+	$(QUIET)$(echo_dt) "$(C_WARNING) Cleaning Markdown/Html intermediates...$(reset)"
 	$(call clean-files,$(clean_mdt_files))
 	
 clean-tex: clean-aux clean-files
-	$(QUIET)$(echo_dt) "$(C_WARNING) Cleaning LaTeX intermediates...$(C_RESET)"
+	$(QUIET)$(echo_dt) "$(C_WARNING) Cleaning LaTeX intermediates...$(reset)"
 	$(call clean-files,$(clean_tex_files))
 
 clean-mdh:
-	$(QUIET)$(echo_dt) "$(C_WARNING) Cleaning Markdown/Html intermediates...$(C_RESET)"
+	$(QUIET)$(echo_dt) "$(C_WARNING) Cleaning Markdown/Html intermediates...$(reset)"
 	$(call clean-files,$(clean_mdh_files))
 
 clean-html: clean-files clean-css
-	$(QUIET)$(echo_dt) "$(C_WARNING) Clean HTML $(clean_html_files)...$(C_RESET)"
+	$(QUIET)$(echo_dt) "$(C_WARNING) Clean HTML $(clean_html_files)...$(reset)"
 	$(call clean-files,$(clean_html_files))
 	
 clean-css:
-	$(QUIET)$(echo_dt) "$(C_WARNING) Clean CSS intermediates...$(C_RESET)"
+	$(QUIET)$(echo_dt) "$(C_WARNING) Clean CSS intermediates...$(reset)"
 	$(call clean-files,$(clean_css_files))
 
 clean-fig:
-	$(QUIET)$(echo_dt) "$(C_WARNING) Clean figures intermediates...$(C_RESET)"
+	$(QUIET)$(echo_dt) "$(C_WARNING) Clean figures intermediates...$(reset)"
 	$(call clean-files,$(clean_fig))
 
 # DISTCLEAN TARGETS
 # Remove all intermediate
 .PHONY: distclean
 distclean: clean
-	$(QUIET)$(echo_dt) "$(C_ERROR) Distclean unnecessary subdirs:'$(distclean_subdirs)'$(C_RESET)"
+	$(QUIET)$(echo_dt) "$(C_ERROR) Distclean unnecessary subdirs:'$(distclean_subdirs)'$(reset)"
 	$(QUIET)$(call clean-files,$(distclean_files))
 	$(QUIET)$(RM) -r $(distclean_subdirs)
 
@@ -1615,18 +1604,18 @@ _check_programs:
 		   $(ECHO) -n "$$np:$$spaces" | $(SED) -e 's/^\(.\{0,20\}\).*$$/\1/'; \
 			loc=`$(WHICH) $$node`; \
 			if [ x"$$?" = x"0" ]; then \
-				$(ECHO) "$(C_SUCCESS)Found:$(C_RESET) $$loc"; \
+				$(ECHO) "$(C_SUCCESS)Found:$(reset) $$loc"; \
 			else \
-				$(ECHO) "$(C_FAILURE)Not Found$(C_RESET)"; \
+				$(ECHO) "$(C_FAILURE)Not Found$(reset)"; \
 			fi; \
 			;; \
 		*) \
 			$(ECHO) -n "$$p:$$spaces" | $(SED) -e 's/^\(.\{0,20\}\).*$$/\1/'; \
 			loc=`$(WHICH) $$p`; \
 			if [ x"$$?" = x"0" ]; then \
-				$(ECHO) "$(C_SUCCESS)Found:$(C_RESET) $$loc"; \
+				$(ECHO) "$(C_SUCCESS)Found:$(reset) $$loc"; \
 			else \
-				$(ECHO) "$(C_FAILURE)Not Found$(C_RESET)"; \
+				$(ECHO) "$(C_FAILURE)Not Found$(reset)"; \
 			fi; \
 			;; \
 	esac; \
@@ -1641,8 +1630,8 @@ VERS_FILE=$(ROOTDIR)/VERSION
 VERSION !=$(CAT) $(VERS_FILE)
 version: VERSION
 	$(QUIET)$(echo_dt) "version: v$(VERSION)"
-	$(SED) -i 's/"version": .*/"version": "$(VERSION)",/' package.json
-	$(SED) -i 's/version: .*/version: $(VERSION)/' $(VARSDATA)
+#	$(SED) -i 's/"version": .*/"version": "$(VERSION)",/' package.json
+#	$(SED) -i 's/version: .*/version: $(VERSION)/' $(VARSDATA)
 #
 # HELP TEXT
 #

@@ -8,11 +8,18 @@ before_install:
 - sudo apt-get update -qq
 - sudo apt-get install -y pandoc
 - sudo apt-get install -y texlive-full
+- sudo apt-get install -y texlive-luatex
 - sudo apt-get install -y texlive-xetex
+- sudo apt-get install -y biber
 - wget https://cdsoft.fr/pp/pp-linux-x86_64.txz
 - tar -Jxvf pp-linux-x86_64.txz
 
-script: make _check_programs 
+before_script:
+- export  PATH=$PATH:.
+
+script:
+- make _check_programs 
+- make version
 
 
 env:
@@ -23,3 +30,4 @@ env:
   - GIT_AUTHOR_NAME: travis
   - GIT_AUTHOR_EMAIL: noreply@travis-ci.org
   - TZ="Europe/Zurich"
+  - 
