@@ -213,54 +213,57 @@ PP_GLO_XML      ?=$(XMLDIR)/_glo-xml.pp
 # line.
 #
 # EXTERNAL PROGRAMS:
-# = ESSENTIAL PROGRAMS
-# == Basic Shell Utilities
+## ESSENTIAL PROGRAMS
+### Basic Shell Utilities
 CAT       ?= cat
-CP        ?= cp -f
-DIFF      ?= diff
-DATE      ?= date
-ECHO      ?= echo
-EGREP     ?= egrep
-FIND      ?= find
+CP        ?= cp -f        # REQUIRED
+DIFF      ?= diff         # REQUIRED
+DATE      ?= date         # REQUIRED
+ECHO      ?= echo         # REQUIRED
+EGREP     ?= egrep        # REQUIRED
+FIND      ?= find         # REQUIRED
 GREP      ?= grep
-MKDIR     ?= mkdir -p
+MKDIR     ?= mkdir -p     # REQUIRED
 MKTEMP    ?= mktemp
-MV        ?= mv -f
-SED       ?= sed
-SORT      ?= sort
-TOUCH     ?= touch
-UNIQ      ?= uniq
-WHICH     ?= which
-# == Pandoc Utilities
-PANDOC    ?=pandoc
-PP        ?=pp
-# == LaTeX (tetex-provided)
+MV        ?= mv -f        # REQUIRED
+RSYNC     ?= rsync        # RECOMMANDED
+SED       ?= sed          # REQUIRED
+SORT      ?= sort         # REQUIRED
+TOUCH     ?= touch        # REQUIRED
+UNIQ      ?= uniq         # REQUIRED
+WHICH     ?= which        # REQUIRED
+### Pandoc Utilities
+PANDOC    ?=pandoc        # REQUIRED
+PCITEPROC ?=pandoc-citeproc # RECOMMANDED
+PCROSSREF ?=pandoc-crossref # RECOMMANDED
+PP        ?=pp            # REQUIRED
+## Usefull external program 
+### LaTeX Utilities
 BIBTEX    ?= bibtex
 BIBER     ?= biber
-LATEX     ?= latex
+LATEX     ?= latex        # should be deprecated... use pdflatex instead!
 PDFLATEX  ?= pdflatex
 LUALATEX  ?= lualatex
 XELATEX   ?= xelatex
-MAKEINDEX	?= makeindex
-XINDY     ?= xindy
-KPSEWHICH ?= kpsewhich
-# == Makefile Color Output
+MAKEINDEX	?= makeindex    # Not yet used (plan for future index management)
+XINDY     ?= xindy        # Not yet used (plan for future index management)
+KPSEWHICH ?= kpsewhich    # Not yet used (plan for future packages check)
+### Makefile Color Output
 TPUT      ?= tput
-# == Figures Generation/Conversion
-CONVERT   ?= convert      # ImageMagick
-INKSCAPE  ?= inkscape -z  # Inkscape (svg support)
-SVGO      ?= svgo         # SVG optimizer/minification
-SCOUR     ?= scour        # SVG optimizer/minification
-# == Usefull external program 
+### Figures Generation/Conversion
+CONVERT   ?= convert      # ImageMagick (REQUIRED)
+INKSCAPE  ?= inkscape     # Inkscape    (RECOMMANDED for svg support)
+SVGO      ?= svgo         # SVG optimizer/minification (optional)
+SCOUR     ?= scour        # SVG optimizer/minification (optional)
+### Usefull Utilities 
 TAR       ?= tar          # To make archive
 ZIP       ?= zip
-NPM       ?= npm          # Install node_modules/<modules>
-RUBY      ?= ruby         # 
-GEM       ?= gem
-BUNDLE    ?= bundle
+NPM       ?= npm          # Install node_modules/<modules> (RECOMMANDED)
+RUBY      ?= ruby         # For Jekyll (optional)
+GEM       ?= gem          # For Jekyll (optional)
+BUNDLE    ?= bundle       # For Jekyll (optional)
 JEKYLL    ?= jekyll
-SASS      ?= $(NODEDIR)/.bin/sass
-RSYNC     ?= rsync 
+SASS      ?= $(NODEDIR)/.bin/sass # For SASS/SCSS support  (RECOMMANDED)
 XSLTPROC  ?= xsltproc
 
 # This ensures that even when echo is a shell builtin, we still use the binary
@@ -273,6 +276,14 @@ TODAY     := $(shell $(DATE) +"%F")
 ################################################################################
 # Default FLAGS
 #
+# Try to get full path of command
+# $(call real-cmd,cmd)  
+real-cmd=$(shell $(WHICH) $(strip $1) 2>/dev/null)
+
+# Test if command is available or not
+# $(call have-cmd,cmd) 
+have-cmd=$(if $(call real-cmd,$1),:,)
+
 
 # Default image extension. 
 # Suitable value can be svg (prefered) or png
@@ -305,15 +316,24 @@ PANDOC_FLAGS    ?=\
 PANDOC_MDEXT      ?=+raw_html+raw_tex+abbreviations+yaml_metadata_block+header_attributes+definition_lists
 
 ## Pandoc  Bibliography options managed with pandoc-citeproc
+USE_CITEPROC=$(call have-cmd,$(PCITEPROC))
+ifeq ($(USE_CITEPROC),:) 
 PANDOC_CITEPROC_FLAGS  ?= --file-scope\
   --filter pandoc-citeproc --csl=$(CSL) \
    $(foreach f,$(BIBFILES), --bibliography=$(f))
+endif
+
+USE_CROSSREF=$(call have-cmd,$(PCROSSREF))
+ifeq ($(USE_CROSSREF),:) 
+PANDOC_CROSSREF_FLAGS  ?= --filter pandoc-crossref
+endif
+
 
 ## Pandoc options for Mardown/HTML generations
-PANDOC_MDH_FLAGS  ?= --file-scope -F pandoc-crossref
+PANDOC_MDH_FLAGS  ?= --file-scope $(PANDOC_CROSSREF_FLAGS)
 
 ## Options for HTML output
-## Note CSS files must be defined in VARSDATA file not here
+## Note: CSS files must be defined in VARSDATA file not here
 PANDOC_HTML_FLAGS ?= $(PANDOC_MDH_FLAGS) \
   $(PANDOC_CITEPROC_FLAGS) --file-scope --standalone\
   --default-image-extension=$(default_image_extension) --mathjax \
@@ -343,7 +363,7 @@ PANDOC_ODT_FLAGS  ?= $(PANDOC_MDH_FLAGS) $(PANDOC_CITEPROC_FLAGS)\
   --default-image-extension=png
 
 ## Pandoc options for Mardown/LaTeX generations
-PANDOC_MDT_FLAGS  ?= -M numberSections=false -F pandoc-crossref  \
+PANDOC_MDT_FLAGS  ?= -M numberSections=false $(PANDOC_CROSSREF_FLAGS)  \
   $(PANDOC_TEX_BIB) --default-image-extension=pdf
 
 ## Pandoc Tex/Bibliography options
@@ -365,7 +385,8 @@ PANDOC_TEX_FLAGS  ?= --file-scope -standalone\
   --template=$(TEMPLATEDIR)/template.latex \
   $(PANDOC_TEX_BIB_FLAGS)
 
-## LaTex/pdfLaTeX/xeLateX/luaLaTeX flag
+## LaTex/pdfLaTeX/xeLateX/luaLaTeX flag initialization
+# (before check quiet state)
 TEXFLAGS      ?= -synctex=1 --shell-escape
 
 SASS_FLAGS    ?= --load-path="$(SASSDIR)" --load-path="$(NODEDIR)"
@@ -423,25 +444,9 @@ endif
 # Utility Functions and Definitions
 #
 
-# Characters that are hard to specify in certain places
-space    := $(empty) $(empty)
-colon    := \:
-comma    := ,
-
-# Useful shell definitions
-sh_true  := :
-sh_false := ! :
-
 # Clear out the standard interfering make suffixes
 .SUFFIXES:
 
-# Try to get full path of command
-# $(call real-cmd,cmd)  
-real-cmd=$(shell $(WHICH) $(strip $1) 2>/dev/null)
-
-# Test if command is available or not
-# $(call have-cmd,cmd) 
-have-cmd=$(if $(call real-cmd,$1),:,)
 
 # Turn off forceful rm (RM is usually mapped to rm -f)
 ifdef SAFE_RM
@@ -450,7 +455,7 @@ endif
 
 # Don't call this directly - it is here to avoid calling wildcard more than
 # once in remove-files.
-remove-files-helper = $(if $1,$(RM) $1,$(sh_true))
+remove-files-helper = $(if $1,$(RM) $1,:)
 
 # $(call remove-files,source destination)
 remove-files        = $(call remove-files-helper,$(wildcard $1))
@@ -616,7 +621,9 @@ define output-all-programs
     -e '/EXTERNAL PROGRAMS/d' \
     -e '/^$$/d' \
     -e '/^[[:space:]]*#/i\ '\
-    -e 's/^[[:space:]]*#[[:space:]][^=]*//' \
+    -e 's/REQUIRED/$(bold)$(red)REQUIRED$(reset)/g' \
+    -e 's/RECOMMANDED/$(bold)$(magenta)RECOMMANDED$(reset)/g' \
+    -e 's/optional/$(cyan)optional$(reset)/g' \
     $(this_file) $(if $1,> '$1',) || \
   $(call echo-error,Cannot determine the name of this makefile.)
 endef
@@ -857,7 +864,7 @@ define get-inkscape-export
 $(if $(filter %.svg,$1),plain-svg,\
 $(error "$(C_ERROR)Unsupported $(INKSCAPE) export '$1'$(reset)"))))))
 endef
-INKSCAPE_FLAGS  +=--vacuum-defs --export-area-page
+INKSCAPE_FLAGS  +=--without-gui --vacuum-defs --export-area-page
 # Creation from svg files
 # $(call convert-svg,<svg>,<out_fig>, $(GRAY))
 define convert-svg
@@ -1018,7 +1025,8 @@ watch-pdf:
 endif
 
 test:
-	$(QUIET)$(ECHO) "cmd:$(call convert-svg,boo,foo.pdf) " 
+	$(QUIET)$(ECHO) "PANDOC_CITEPROC_FLAGS:$(PANDOC_CITEPROC_FLAGS) [$(USE_CITEPROC)] <= $(PCITEPROC)" 
+	$(QUIET)$(ECHO) "PANDOC_CROSSREF_FLAGS:$(PANDOC_CROSSREF_FLAGS) " 
 ################################################################################
 # MAIN TARGETS
 #
@@ -1135,7 +1143,7 @@ $(TEXDIR)/$(MAIN_DOC_BASENAME).pdf:$(call path-norm,$(TEXDIR)/$(MAIN_DOC_BASENAM
 	  BUILD_BIB_STRATEGY='$(strip $(call get-bib-strategy,$(TEXDIR)/$(MAIN_DOC_BASENAME).tex))' \
 	"$(MAIN_DOC_BASENAME).pdf" && cd -
 	$(call echo-end-target,$@)
-#	$(QUIET)$(ECHO) "$(C_FAILURE) build of $@ not yet implemented$(reset)"
+#	$(QUIET)$(ECHO) "$(bold)$(red) build of $@ not yet implemented$(reset)"
 
 .SECONDARY: $(TEXDIR)/$(MAIN_DOC_BASENAME).pdf \
   $(TEXDIR)/$(MAIN_DOC_BASENAME).tex 
@@ -1232,7 +1240,7 @@ endif
 %.aux %.bcf %.fls:%.tex
 	$(QUIET)$(call echo-build,$<,$*.pdf,1);\
 	$(echo_dt) "$(C_INFO)Create/Update $*.aux $*.bcf and $*.fls$(reset)";\
-	$(call run-latex,$*,-recorder)|| $(sh_true); \
+	$(call run-latex,$*,-recorder)|| : ; \
 	$(call die-on-no-aux,$*) ;\
 	fatal=`$(call colorize-latex-errors,$*.log)`; \
 	if [ x"$$fatal" != x"" ]; then \
@@ -1326,10 +1334,10 @@ svg:$(fig_svg) $(OUT_FIGDIR)
 $(OUT_FIGDIR)/%.svg:$(MEDIADIR)/%.svg
 	$(QUIET)$(call echo-fig,$^,$<,$@)
 	$(QUIET)$(call convert-svg,$<,$@)
-ifeq "$(if $(shell $(WHICH) $(SVGO) 2>/dev/null),1,)" "1"
+ifeq "$(if $(call real-cmd,$(SVGO)),1,)" "1"
 	$(QUIET)$(SVGO) --enable={cleanupIDs,collapseGroups,removeUnusedNS,removeUselessStrokeAndFill,removeUselessDefs,removeComments,removeMetadata,removeEmptyAttrs,removeEmptyContainers} $@
 endif
-ifeq "$(if $(shell $(WHICH) $(SCOUR) 2>/dev/null),1,)" "1"
+ifeq "$(if $(call real-cmd,$(SCOUR)),1,)" "1"
 	$(QUIET)$(SCOUR) --enable-viewboxing --enable-id-stripping \
 		--enable-comment-stripping --shorten-ids --indent=none \
 		-i $@ -o $@o 
@@ -1383,7 +1391,7 @@ $(NODEDIR)/%/:
 	$(QUIET)$(ECHO) "$(C_INFO) $* now in '$@'$(reset)"
 
 ifeq ($(BUILD_OUTPUT_MODE),multi)
-REAL_BUNDLE   := $(shell $(WHICH) $(BUNDLE))
+REAL_BUNDLE   := $(call real-cmd,$(BUNDLE))
 REAL_JEKYLL   := $(BUNDLE) exec $(JEKYLL)
 
 htmlmuli_temp ?= $(OUTDIR)/htmlmuli.tmp
@@ -1577,12 +1585,12 @@ tbz:
 
 .PHONY: _all_programs
 _all_programs:
-	$(QUIET)$(ECHO) "# All External Programs Used"
+	$(QUIET)$(echo_dt) "# All External Programs Used\n"
 	$(QUIET)$(call output-all-programs)
 
 .PHONY: _check_programs
 _check_programs:
-	$(QUIET)$(ECHO) "== Checking Makefile Dependencies =="; $(ECHO)
+	$(QUIET)$(echo_dt) "== Checking Makefile Dependencies ==\n"; 
 	$(QUIET) \
 	allprogs=`\
 	 ($(call output-all-programs)) | \
@@ -1602,25 +1610,29 @@ _check_programs:
 		  node=`$(ECHO) $$p| $(SED) -e 's|\$$(NODEDIR)|$(NODEDIR)|g'`;\
 		  np=`basename $$node`;\
 		   $(ECHO) -n "$$np:$$spaces" | $(SED) -e 's/^\(.\{0,20\}\).*$$/\1/'; \
-			loc=`$(WHICH) $$node`; \
+			loc=`$(WHICH) $$node 2>/dev/null`; \
 			if [ x"$$?" = x"0" ]; then \
-				$(ECHO) "$(C_SUCCESS)Found:$(reset) $$loc"; \
+				$(ECHO) "$(bold)$(green)Found:$(reset) $$loc"; \
 			else \
-				$(ECHO) "$(C_FAILURE)Not Found$(reset)"; \
+				$(ECHO) "$(bold)$(red)Not Found$(reset)"; \
 			fi; \
 			;; \
 		*) \
 			$(ECHO) -n "$$p:$$spaces" | $(SED) -e 's/^\(.\{0,20\}\).*$$/\1/'; \
 			loc=`$(WHICH) $$p`; \
 			if [ x"$$?" = x"0" ]; then \
-				$(ECHO) "$(C_SUCCESS)Found:$(reset) $$loc"; \
+				$(ECHO) "$(bold)$(green)Found:$(reset) $$loc"; \
 			else \
-				$(ECHO) "$(C_FAILURE)Not Found$(reset)"; \
+				$(ECHO) "$(bold)$(red)Not Found$(reset)"; \
 			fi; \
 			;; \
 	esac; \
 	done
-	
+
+.PHONY:_check_pp
+_check_pp:
+	$(QUIET)$(ECHO) "== Checking Makefile Dependencies =="; $(ECHO)
+
 .PHONY: _all_sources
 _all_sources:
 	$(QUIET)$(echo_dt) "== All Sources =="
