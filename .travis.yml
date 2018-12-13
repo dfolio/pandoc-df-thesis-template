@@ -32,10 +32,22 @@ addons:
   apt:
     update: true
     packages:
+      - ghc 
+      - cabal
       - pandoc
-      - texlive-full
+#      - texlive-full
+      - texlive-generic-recommended
+      - texlive-fonts-recommended
+      - texlive-latex-recommended
       - texlive-xetex
       - biber
+
+#  - sudo apt-get update -qq
+#  - sudo apt-get install -y pandoc
+#  - sudo apt-get install -y texlive-full
+#  - sudo apt-get install -y texlive-luatex
+#  - sudo apt-get install -y texlive-xetex
+#  - sudo apt-get install -y biber
 
 matrix:
   fast_finish: true
@@ -45,28 +57,25 @@ matrix:
 #  - "node_modules"
   
 before_install:
-#  - sudo apt-get update -qq
-#  - sudo apt-get install -y pandoc
-#  - sudo apt-get install -y texlive-full
-#  - sudo apt-get install -y texlive-luatex
-#  - sudo apt-get install -y texlive-xetex
-#  - sudo apt-get install -y biber
-  - wget https://cdsoft.fr/pp/pp.tgz
+# Download and unpack the stack executable
+  - export PATH=/opt/cabal/bin:$HOME/.local/bin:$HOME/.cabal/bin:$PATH:.
+  - curl -L https://www.stackage.org/stack/linux-x86_64 |\
+      tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+  - 
+  - mkdir -p ${HOME}/pp
+  - curl -L https://cdsoft.fr/pp/pp.tgz | \
+      tar xz -C ${HOME}/pp
   
 #- wget https://cdsoft.fr/pp/pp-linux-x86_64.txz
 #- tar -Jxvf pp-linux-x86_64.txz
 
 install:
-  - mkdir pp
-  - mv pp.tgz pp
-  - cd pp
-  - tar xzf pp.tgz
+  - cd ${HOME}/pp
   - make
   - make install
-  - cd ..
+  - cd ~
 
 before_script:
-  - export  PATH=$PATH:.
   - which pp
 #- ldd -v -r ./pp
 # 2018-12-13 16:11:19 :: Error
