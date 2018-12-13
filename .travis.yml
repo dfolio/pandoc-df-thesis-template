@@ -34,7 +34,6 @@ addons:
     packages:
       - pandoc
       - texlive-full
-      - texlive-lualatex
       - texlive-xetex
       - biber
 
