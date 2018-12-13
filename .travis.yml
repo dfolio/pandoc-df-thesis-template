@@ -70,8 +70,8 @@ before_install:
 
 install:
   - cd ${HOME}/pp
-  - make
-  - make install
+  - sudo make
+  - sudo make install
   - cd ~
 
 before_script:
