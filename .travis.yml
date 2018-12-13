@@ -27,8 +27,9 @@ before_script:
 - export  PATH=$PATH:.
 
 script:
-- make _check_programs 
 - make version
+- make _check_programs 
+- make html VERBOSE=1
 
 
 env:
