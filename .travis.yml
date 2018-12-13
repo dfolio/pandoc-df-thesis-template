@@ -33,12 +33,12 @@ addons:
     update: true
     packages:
       - ghc 
-      - cabal
       - pandoc
 #      - texlive-full
       - texlive-generic-recommended
       - texlive-fonts-recommended
       - texlive-latex-recommended
+      - texlive-luatex
       - texlive-xetex
       - biber
 
