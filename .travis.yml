@@ -69,8 +69,9 @@ before_install:
 
 install:
 # Build dependencies
-- stack --no-terminal --install-ghc test --only-dependencies
 - cd ${HOME}/pp
+- stack --no-terminal --install-ghc test --only-dependencies
+#- stack --no-terminal test --haddock --no-haddock-deps
 #- make
 #- make install
 - cd ~
@@ -85,7 +86,6 @@ before_script:
 
 script:
 # Build the package, its tests, and its docs and run the tests
-- stack --no-terminal test --haddock --no-haddock-deps
 - make version
 - make _check_programs 
 #- make html VERBOSE=1
