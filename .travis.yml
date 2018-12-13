@@ -1,37 +1,22 @@
+# Use new container infrastructure to enable caching
+sudo: false
 
 # branch whitelist, only for GitHub Pages
 branches:
   only:
   - master     # test the master branch
 
-matrix:
-  fast_finish: true
+# Do not choose a language; we provide our own build tools.
+language: generic
 
 cache:
   bundler: true
   apt: true
-#  directories:
-#  - "node_modules"
-  
-before_install:
-- sudo apt-get update -qq
-- sudo apt-get install -y pandoc
-- sudo apt-get install -y texlive-full
-- sudo apt-get install -y texlive-luatex
-- sudo apt-get install -y texlive-xetex
-- sudo apt-get install -y biber
-- wget https://cdsoft.fr/pp/pp-linux-x86_64.txz
-- tar -Jxvf pp-linux-x86_64.txz
-
-before_script:
-- export  PATH=$PATH:.
-- ldd -v -r ./pp
-
-script:
-- make version
-- make _check_programs 
-#- make html VERBOSE=1
-
+  directories:
+  - $HOME/.bundle
+  - $HOME/.cabal
+  - $HOME/.ghc
+  - $HOME/.stack
 
 env:
   global:
@@ -41,4 +26,58 @@ env:
   - GIT_AUTHOR_NAME: travis
   - GIT_AUTHOR_EMAIL: noreply@travis-ci.org
   - TZ="Europe/Zurich"
-  - 
+  - GHC_OPTIONS="-O0 -Werror"
+
+addons:
+  apt:
+    update: true
+    packages:
+      - pandoc
+      - texlive-full
+      - texlive-lualatex
+      - texlive-xetex
+      - biber
+
+matrix:
+  fast_finish: true
+
+
+#  directories:
+#  - "node_modules"
+  
+before_install:
+#  - sudo apt-get update -qq
+#  - sudo apt-get install -y pandoc
+#  - sudo apt-get install -y texlive-full
+#  - sudo apt-get install -y texlive-luatex
+#  - sudo apt-get install -y texlive-xetex
+#  - sudo apt-get install -y biber
+  - wget https://cdsoft.fr/pp/pp.tgz
+  
+#- wget https://cdsoft.fr/pp/pp-linux-x86_64.txz
+#- tar -Jxvf pp-linux-x86_64.txz
+
+install:
+  - mkdir pp
+  - mv pp.tgz pp
+  - cd pp
+  - tar xzf pp.tgz
+  - make
+  - make install
+  - cd ..
+
+before_script:
+  - export  PATH=$PATH:.
+  - which pp
+#- ldd -v -r ./pp
+# 2018-12-13 16:11:19 :: Error
+#symbol logf, version GLIBC_2.27 not defined in file libm.so.6 with link time reference	(./pp)
+#symbol expf, version GLIBC_2.27 not defined in file libm.so.6 with link time reference	(./pp)
+#symbol powf, version GLIBC_2.27 not defined in file libm.so.6 with link time reference	(./pp)
+
+script:
+- make version
+- make _check_programs 
+#- make html VERBOSE=1
+
+
