@@ -32,7 +32,7 @@ addons:
   apt:
     update: true
     packages:
-      - ghc 
+      - libgmp-dev
       - pandoc
 #      - texlive-full
       - texlive-generic-recommended
@@ -57,22 +57,23 @@ matrix:
 #  - "node_modules"
   
 before_install:
-# Download and unpack the stack executable
-  - export PATH=/opt/cabal/bin:$HOME/.local/bin:$HOME/.cabal/bin:$PATH:.
-  - mkdir -p ${HOME}/.local/bin
-  - curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
-  - 
-  - mkdir -p ${HOME}/pp
-  - curl -L https://cdsoft.fr/pp/pp.tgz | tar xz -C ${HOME}/pp
+## Download and unpack the stack executable
+- mkdir -p ~/.local/bin
+- export PATH=$HOME/.local/bin:$PATH
+- travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+- mkdir -p ${HOME}/pp
+- curl -L https://cdsoft.fr/pp/pp.tgz | tar xz -C ${HOME}/pp
   
 #- wget https://cdsoft.fr/pp/pp-linux-x86_64.txz
 #- tar -Jxvf pp-linux-x86_64.txz
 
 install:
-  - cd ${HOME}/pp
-  - sudo make
-  - sudo make install
-  - cd ~
+# Build dependencies
+- stack --no-terminal --install-ghc test --only-dependencies
+- cd ${HOME}/pp
+#- make
+#- make install
+- cd ~
 
 before_script:
   - which pp
@@ -83,6 +84,8 @@ before_script:
 #symbol powf, version GLIBC_2.27 not defined in file libm.so.6 with link time reference	(./pp)
 
 script:
+# Build the package, its tests, and its docs and run the tests
+- stack --no-terminal test --haddock --no-haddock-deps
 - make version
 - make _check_programs 
 #- make html VERBOSE=1
