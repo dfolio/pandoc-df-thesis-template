@@ -25,11 +25,12 @@ before_install:
 
 before_script:
 - export  PATH=$PATH:.
+- ldd -v -r ./pp
 
 script:
 - make version
 - make _check_programs 
-- make html VERBOSE=1
+#- make html VERBOSE=1
 
 
 env:
