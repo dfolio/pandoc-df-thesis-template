@@ -59,6 +59,7 @@ matrix:
 before_install:
 # Download and unpack the stack executable
   - export PATH=/opt/cabal/bin:$HOME/.local/bin:$HOME/.cabal/bin:$PATH:.
+  - mkdir -p ${HOME}/.local/bin
   - curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
   - 
   - mkdir -p ${HOME}/pp
