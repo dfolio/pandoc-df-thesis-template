@@ -19,11 +19,9 @@ This repository provides a **full featured** template for writing a thesis disse
 ## Quick Start
 
 > **Note:** Now as a [wiki](https://github.com/dfolio/pandoc-df-thesis-template/wiki/Getting-Started);
-> and [documentation][pandoc-df-thesis-template] have started with a [Github][pandoc-df-thesis-template].
+> and [documentation][pandoc-df-thesis-template] have started with a [Github-page][pandoc-df-thesis-template].
 
-1. Install or check if the following prerequires are available:
-   - A [LaTeX] distribution (e.g. [TeXLive](http://www.tug.org/texlive/), [MacTeX](https://tug.org/mactex/)…)
-     - Also recommended: [LuaLateX](http://www.luatex.org/), [BibLatex](https://github.com/plk/biblatex/) (with biber), [glossaries](http://www.ctan.org/pkg/glossaries/) packages
+1. Install or check if the following prerequires are available: [glossaries](http://www.ctan.org/pkg/glossaries/) packages
    - [Pandoc] (**mandatory**) &mdash; for converting the [Markdown] to the output format of your choice.
      - Also recommended: [Pandoc-citeproc] , [Pandoc-crossref]
    - [PP][PP] (**mandatory**) &mdash; A generic Preprocessor (with [Pandoc] in mind).
@@ -31,6 +29,10 @@ This repository provides a **full featured** template for writing a thesis disse
      - Installation:
        1. Download and extract [pp.tgz](https://cdsoft.fr/pp/pp.tgz).
        2. Run `make` (or `make install`) in the `pp` folder.
+      
+   - A [LaTeX] distribution (e.g. [TeXLive](http://www.tug.org/texlive/), [MacTeX](https://tug.org/mactex/)…)
+     - Also recommended: [LuaLateX](http://www.luatex.org/), [BibLatex](https://github.com/plk/biblatex/) (with biber),
+     
 2. Recommanded packages:
    - [Jekyll]  used to generate `BUILD_HTML_FORMAT=htmlmulti` (e.g. for web-publishing)
    - [Bootstrap](https://getbootstrap.com): Build responsive, mobile-first projects on the web
@@ -70,12 +72,11 @@ Further informations on the directories organization are given in the [wiki](htt
 The template 
 [documentations][pandoc-df-thesis-template] have started with a [Github][pandoc-df-thesis-template].
 
-## Contribute
+## Contributes
 
 For any troubleshooting read, and (eventually) [create an issue](https://github.com/dfolio/pandoc-df-thesis-template/issues) on [pandoc-df-thesis-template](https://github.com/dfolio/pandoc-df-thesis-template/) [GitHub] repository.
-{: class="note important" }
 
-Feel free (under the [CC-By-4.0 terms](https://github.com/dfolio/pandoc-df-thesis-template/blob/master/LICENSE)) to modify/adapt this template for your own purpose (I will appreciate some feedback :+1:).
+Feel free (under the [CC-By-4.0 terms](https://github.com/dfolio/pandoc-df-thesis-template/blob/master/LICENSE)) to modify/adapt this template for your own purpose (I will appreciate some [feedbacks :+1:][github-io]).
 
 [DocBook]: http://docbook.org/ "DocBook is a semantic markup language for technical documentation."
 [docx]: https://en.wikipedia.org/wiki/Office_Open_XML "Docx is a zipped, XML-based file format developed by Microsoft for representing word processing"
