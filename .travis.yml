@@ -18,6 +18,9 @@ cache:
   - $HOME/.ghc
   - $HOME/.stack
 
+#  directories:
+#  - "node_modules"
+
 env:
   global:
   - secure: MIIEpAIBAAKCAQEAumuqh31NhPJvV3BCRKEZYiSvbZc6aHtOfC6OoArQUsw1GsebfWWwLSti/ugoLqCZxHTK55i3FcX3hgI2qzo4NV2R9BgB4odfh0fL+xkDUb0cEWdZ8zvvKMRaEnqfryQ4cE0W5ApeBN5JnrN7idjit60d0lolZYGKPVGC089eqikt2fSPGAxsthY8V2ZC9vCePtAnwO6rpRe7x7cxgbxSsZpZmffveQoc6NM+pcWQAkBt8IIRY7WTvwTKDAWsf8MCDiXKdzI/HrezMmc3lz3BWP8Cp2nywPqQDLus/uIL1bV/4dJawwOtpR24k7VYrrrhK4g07dB1uyXPifYWFoAXEwIDAQABAoIBAQCx08qT/F9aFrlHO3q7ZMGF8WC2ta+twxIXO4IqAKbAlLODnC0i7UGllOGWL3dFI0YLNS3oxrC/QFzhpHLp21uK7Hsx0UTbBi+GKGLYX//elPqVT3VqpR16UfNp9TcmJvL/jUnstkcBddncXXHXCOEcPTNZWUybC3sHCx41VncC8Styu1+bFGOtasDbmPF8ZbHaeb4XufZdpErBmJxYD4AZNMMdGQqkFPqfQCmHghuo7K9QXOm7EPHSs/Gii7WlYQdQC6ZaMaXiZHy9x/qguGY6I0EpdcEZh/hH5peryKRoEm34zzTwG9Jpil61XKJe2WsE5qyTPUFFgq+84XYw70oBAoGBAOlAiKAgUiaSbgM0G3+U3FPCH7cQkXQHGArKnBcv2ywWdOKC69eEeCpwvr+lZXSfvDSfXDAXA58Ffzrz463MOF1VP9JSxgfcS38xJdP28L+8e4POF2ZQguEBZt4CeVbNMzauG4P7GhGKZq70a1AsAM3uktHf1QMIVaN+dFfzNeZTAoGBAMyZ6vc2i1FzSSlvtn0f6H+fWb1S8ypzDnKsE9rgy0AXEouS1CyKSHj+13pmbFA2sviMBBzbTZwP7zDiQQzdi3naForAGK2zoVOPO45oSS1/tj42FfL/CHDqiyRhbAgPPux+08IxvUaUbh0ZUkot7fE9kvRigsrTsAeeN0BMYXRBAoGBAN47rzCpOrwnXYvN1LlMslNXLHJ15a+fpqd5fRiWbwLlbn318RBI1VjSTNs5kZ15J48XmnTzKG8VhLA9eNq5Laa3N3SDiswodwH7aKg4qg50XVYqQJ8p7FjGxiSWRNeP8NCTOAIady7pJ4Zft/MNycJrIRW3ZjNaeIWqUN0PC3ajAoGAZU5o+1M0lHXi6fN4hmgANQDv7EBgSsqBguIVSrE3slo6QoXHLO6jh9WXV/HS+7y5zTt25droiLeTFb9Ruk8QOptzwevvzEI/RSKMuKyGX1L3J8KcB5+jzFU15COg3DTAUVVTALqkH4hrJVleV4B6apK0avFEFa3PYVZDwUCQmIECgYAljrNqGhZXzxDG4GgcI+08Gg7U0sQS64czn9IDQ+RUKv/HzKwoTnx7z+xTv1TfYcGC1clrBWWECMAiTvVSh+42s07dxrwaBHbJCUZyJ9NGHFsLI69wzWsapbIU1SLP1rGjOYkI+t6WII9RDEXRyYhFNkit31qGaJMg5vDdd12mPQ==
@@ -53,28 +56,26 @@ matrix:
   fast_finish: true
 
 
-#  directories:
-#  - "node_modules"
   
 before_install:
 ## Download and unpack the stack executable
-- mkdir -p ~/.local/bin
-- export PATH=$HOME/.local/bin:$PATH:.
-- travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
-- mkdir -p ${HOME}/pp
-#- travis_retry  curl -L https://cdsoft.fr/pp/pp.tgz | tar xz -C ${HOME}/pp 
- - travis_retry curl -L https://cdsoft.fr/pp/pp-linux-x86_64.txz|- tar -Jxv -C ${HOME}/pp
+  - mkdir -p ~/.local/bin
+  - export PATH=$HOME/.local/bin:$PATH:.
+  - travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+  - mkdir -p ${HOME}/pp
+  #- travis_retry  curl -L https://cdsoft.fr/pp/pp.tgz | tar xz -C ${HOME}/pp 
+   - travis_retry curl -L https://cdsoft.fr/pp/pp-linux-x86_64.txz|- tar -Jxv -C ${HOME}/pp
 
 install:
 # Build dependencies
-- cd ${HOME}/pp
-- pandc -v
-- ldd -v -r ./pp
-#- stack --no-terminal --install-ghc test --only-dependencies
-#- stack --no-terminal test --haddock --no-haddock-deps
-#- make
-#- make install
-- cd ~
+  - cd ${HOME}/pp
+  - pandc -v
+  - ldd -v -r ./pp
+  #- stack --no-terminal --install-ghc test --only-dependencies
+  #- stack --no-terminal test --haddock --no-haddock-deps
+  #- make
+  #- make install
+  - cd ~
 
 #before_script:
 #  - which pp
