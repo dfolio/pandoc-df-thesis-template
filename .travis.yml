@@ -63,7 +63,7 @@ before_install:
 - export PATH=$HOME/.local/bin:$PATH:.
 - travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 - mkdir -p ${HOME}/pp 
-- travis_retry curl -L https://cdsoft.fr/pp/pp-linux-x86_64.txz|- tar -Jxv -C ${HOME}/pp
+- travis_retry curl -L https://cdsoft.fr/pp/pp-linux-x86_64.txz| tar -Jxv -C ${HOME}/pp
 
 #- travis_retry  curl -L https://cdsoft.fr/pp/pp.tgz | tar xz -C ${HOME}/pp 
 
