@@ -62,15 +62,15 @@ before_install:
 - export PATH=$HOME/.local/bin:$PATH
 - travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 - mkdir -p ${HOME}/pp
-- curl -L https://cdsoft.fr/pp/pp.tgz | tar xz -C ${HOME}/pp
-  
-#- wget https://cdsoft.fr/pp/pp-linux-x86_64.txz
-#- tar -Jxvf pp-linux-x86_64.txz
+#- curl -L https://cdsoft.fr/pp/pp.tgz | tar xz -C ${HOME}/pp 
+ - curl -L https://cdsoft.fr/pp/pp-linux-x86_64.txz|- tar -Jxv -C ${HOME}/pp
 
 install:
 # Build dependencies
 - cd ${HOME}/pp
-- stack --no-terminal --install-ghc test --only-dependencies
+- pandc -v
+- ldd -v -r ./pp
+#- stack --no-terminal --install-ghc test --only-dependencies
 #- stack --no-terminal test --haddock --no-haddock-deps
 #- make
 #- make install
