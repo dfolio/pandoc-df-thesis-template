@@ -1,5 +1,5 @@
 # Use new container infrastructure to enable caching
-sudo: false
+#sudo: false
 
 # branch whitelist, only for GitHub Pages
 branches:
@@ -7,7 +7,10 @@ branches:
   - master     # test the master branch
 
 # Do not choose a language; we provide our own build tools.
-language: generic
+#language: generic
+
+# switch to R because latex and pandoc already installed!
+language: r
 
 cache:
   bundler: true
@@ -36,14 +39,14 @@ addons:
     update: true
     packages:
       - libgmp-dev
-      - pandoc
+#      - pandoc
 #      - texlive-full
-      - texlive-generic-recommended
-      - texlive-fonts-recommended
-      - texlive-latex-recommended
-      - texlive-luatex
-      - texlive-xetex
-      - biber
+#      - texlive-generic-recommended
+#      - texlive-fonts-recommended
+#      - texlive-latex-recommended
+#      - texlive-luatex
+#      - texlive-xetex
+#      - biber
 
 #  - sudo apt-get update -qq
 #  - sudo apt-get install -y pandoc
@@ -63,18 +66,17 @@ before_install:
 - export PATH=$HOME/.local/bin:$PATH:.
 - travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 - mkdir -p ${HOME}/pp 
-- travis_retry curl -L https://cdsoft.fr/pp/pp-linux-x86_64.txz| tar -Jxv -C ${HOME}/pp
-
-#- travis_retry  curl -L https://cdsoft.fr/pp/pp.tgz | tar xz -C ${HOME}/pp 
+#- travis_retry curl -L https://cdsoft.fr/pp/pp-linux-x86_64.txz| tar -Jxv -C ${HOME}/pp
+- travis_retry  curl -L https://cdsoft.fr/pp/pp.tgz | tar xz -C ${HOME}/pp 
 
 # Build dependencies
 install:
 - cd ${HOME}/pp
 - pandoc -v
-- ldd -v -r ./pp
+# - ldd -v -r ./pp
 #- stack --no-terminal --install-ghc test --only-dependencies
 #- stack --no-terminal test --haddock --no-haddock-deps
-#- make
+- sudo make
 #- make install
 - cd ~
 
