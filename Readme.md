@@ -1,8 +1,8 @@
 # pandoc-df-thesis-template — D. Folio [Pandoc] thesis template
 
-{%comment%}
+<!--
 [![Travis](https://img.shields.io/travis/com/dfolio/pandoc-df-thesis-template.svg)][travis-ci]
-{%endcomment%}
+-->
 [![Size](https://img.shields.io/github/repo-size/dfolio/pandoc-df-thesis-template.svg)][github-io]
 [![Version](https://img.shields.io/github/tag/dfolio/pandoc-df-thesis-template.svg)][github-io]
 [![License](https://img.shields.io/github/license/dfolio/pandoc-df-thesis-template.svg)](https://raw.githubusercontent.com/dfolio/pandoc-df-thesis-template/master/LICENSE)
@@ -23,7 +23,7 @@ This repository provides a **full featured** template for writing a thesis disse
 > **Note:** Now as a [wiki](https://github.com/dfolio/pandoc-df-thesis-template/wiki/Getting-Started);
 > and [documentation][pandoc-df-thesis-template] have started with a [Github-page][pandoc-df-thesis-template].
 
-1. Install or check if the following prerequires are available: [glossaries](http://www.ctan.org/pkg/glossaries/) packages
+1. Install or check if the following prerequires are available: 
    - [Pandoc] (**mandatory**) &mdash; for converting the [Markdown] to the output format of your choice.
      - Also recommended: [Pandoc-citeproc] , [Pandoc-crossref]
    - [PP][PP] (**mandatory**) &mdash; A generic Preprocessor (with [Pandoc] in mind).
@@ -33,7 +33,7 @@ This repository provides a **full featured** template for writing a thesis disse
        2. Run `make` (or `make install`) in the `pp` folder.
       
    - A [LaTeX] distribution (e.g. [TeXLive](http://www.tug.org/texlive/), [MacTeX](https://tug.org/mactex/)…)
-     - Also recommended: [LuaLateX](http://www.luatex.org/), [BibLatex](https://github.com/plk/biblatex/) (with biber),
+     - Also recommended: [LuaLateX](http://www.luatex.org/), [BibLatex](https://github.com/plk/biblatex/) (with biber), [glossaries](http://www.ctan.org/pkg/glossaries/) packages...
      
 2. Recommanded packages:
    - [Jekyll]  used to generate `BUILD_HTML_FORMAT=htmlmulti` (e.g. for web-publishing)
