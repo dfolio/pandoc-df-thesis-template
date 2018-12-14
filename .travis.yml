@@ -59,11 +59,11 @@ matrix:
 before_install:
 ## Download and unpack the stack executable
 - mkdir -p ~/.local/bin
-- export PATH=$HOME/.local/bin:$PATH
+- export PATH=$HOME/.local/bin:$PATH:.
 - travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 - mkdir -p ${HOME}/pp
-#- curl -L https://cdsoft.fr/pp/pp.tgz | tar xz -C ${HOME}/pp 
- - curl -L https://cdsoft.fr/pp/pp-linux-x86_64.txz|- tar -Jxv -C ${HOME}/pp
+#- travis_retry  curl -L https://cdsoft.fr/pp/pp.tgz | tar xz -C ${HOME}/pp 
+ - travis_retry curl -L https://cdsoft.fr/pp/pp-linux-x86_64.txz|- tar -Jxv -C ${HOME}/pp
 
 install:
 # Build dependencies
@@ -76,8 +76,8 @@ install:
 #- make install
 - cd ~
 
-before_script:
-  - which pp
+#before_script:
+#  - which pp
 #- ldd -v -r ./pp
 # 2018-12-13 16:11:19 :: Error
 #symbol logf, version GLIBC_2.27 not defined in file libm.so.6 with link time reference	(./pp)
