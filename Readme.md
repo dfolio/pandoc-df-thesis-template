@@ -1,6 +1,8 @@
 # pandoc-df-thesis-template — D. Folio [Pandoc] thesis template
 
+{%comment%}
 [![Travis](https://img.shields.io/travis/com/dfolio/pandoc-df-thesis-template.svg)][travis-ci]
+{%endcomment%}
 [![Size](https://img.shields.io/github/repo-size/dfolio/pandoc-df-thesis-template.svg)][github-io]
 [![Version](https://img.shields.io/github/tag/dfolio/pandoc-df-thesis-template.svg)][github-io]
 [![License](https://img.shields.io/github/license/dfolio/pandoc-df-thesis-template.svg)](https://raw.githubusercontent.com/dfolio/pandoc-df-thesis-template/master/LICENSE)
@@ -9,9 +11,9 @@
 This repository provides a **full featured** template for writing a thesis dissertation using [Pandoc], <http://pandoc.org>. Based on a “modified” markdown sources, this template can deal with many outputs dialect basically supported by [Pandoc]
 
 - `pdf`: (**preferred**) output generated from (pdf/lua)[LaTeX];
-- `html`: single (based solely on [Pandoc]) and multi (based on [Jekyll])  [HTML]&nbsp;5 file, e.g. for web-publications;
-- `epub`: [EPUB] v3 ebook;
-- `docbook5`: XML/[DocBook][DocBook] (v5) and HTML chunked files  (currently with **limited support**);
+- `html`: single (based solely on [Pandoc]) and multi (based on [Jekyll])  [HTML 5][HTML] file, e.g. for web-publications;
+- `epub`: [EPUB  v3][EPUB] ebook;
+- `docbook5`: XML/[DocBook (v5)][DocBook] and [HTML] chunked files  (currently with **limited support**);
 - `odt`:  [LibreOffice/OpenOffice OpenDocument][odt];
 - `docx`: [Microsoft Word][docx];
 
