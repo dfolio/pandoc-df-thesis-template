@@ -70,7 +70,7 @@ before_install:
 # Build dependencies
 install:
 - cd ${HOME}/pp
-- pandc -v
+- pandoc -v
 - ldd -v -r ./pp
 #- stack --no-terminal --install-ghc test --only-dependencies
 #- stack --no-terminal test --haddock --no-haddock-deps
