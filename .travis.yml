@@ -77,7 +77,7 @@ before_install:
 
 # Build dependencies
 install:
-- cd ${HOME}/pp
+- popd ${HOME}/pp
 - pandoc -v
 - travis_wait 30 stack --no-terminal setup
 #- travis_wait 90 stack --no-terminal build
@@ -85,8 +85,8 @@ install:
 #- stack --no-terminal --install-ghc test --only-dependencies
 #- stack --no-terminal test --haddock --no-haddock-deps
 - make
-#- make install
-- cd ~
+- make install
+- pushd
 
 #before_script:
 #  - which pp
