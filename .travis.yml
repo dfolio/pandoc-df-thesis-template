@@ -74,9 +74,11 @@ before_install:
 - mkdir -p ${HOME}/pp 
 #- travis_retry curl -L https://cdsoft.fr/pp/pp-linux-x86_64.txz| tar -Jxv -C ${HOME}/pp
 - travis_retry  curl -L https://cdsoft.fr/pp/pp.tgz | tar xz -C ${HOME}/pp 
+- cabal update 
 
 # Build dependencies
 install:
+- cabal install pandoc-crossref
 - pushd ${HOME}/pp
 - pandoc -v
 - travis_wait 30 stack --no-terminal setup
