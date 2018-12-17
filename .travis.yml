@@ -80,11 +80,11 @@ install:
 - cd ${HOME}/pp
 - pandoc -v
 - travis_wait 30 stack --no-terminal setup
-- travis_wait 90 stack --no-terminal build
+#- travis_wait 90 stack --no-terminal build
 # - ldd -v -r ./pp
 #- stack --no-terminal --install-ghc test --only-dependencies
 #- stack --no-terminal test --haddock --no-haddock-deps
-#- sudo make
+- make
 #- make install
 - cd ~
 
