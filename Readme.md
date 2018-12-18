@@ -1,12 +1,10 @@
 # pandoc-df-thesis-template — D. Folio [Pandoc] thesis template
 
-<!--
-[![Travis](https://img.shields.io/travis/com/dfolio/pandoc-df-thesis-template.svg)][travis-ci]
--->
-[![Size](https://img.shields.io/github/repo-size/dfolio/pandoc-df-thesis-template.svg)][github-io]
-[![Version](https://img.shields.io/github/tag/dfolio/pandoc-df-thesis-template.svg)][github-io]
-[![License](https://img.shields.io/github/license/dfolio/pandoc-df-thesis-template.svg)](https://raw.githubusercontent.com/dfolio/pandoc-df-thesis-template/master/LICENSE)
-
+<-- (https://raw.githubusercontent.com/dfolio/pandoc-df-thesis-template/master/LICENSE) -->
+[![Travis Build Status](https://img.shields.io/travis/com/dfolio/pandoc-df-thesis-template.svg)][travis-ci]
+[![License](https://img.shields.io/github/license/dfolio/pandoc-df-thesis-template.svg)][license]
+[![Version](https://img.shields.io/github/tag/dfolio/pandoc-df-thesis-template.svg)][this-repo]
+ [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)][this-issues]
 
 This repository provides a **full featured** template for writing a thesis dissertation using [Pandoc], <http://pandoc.org>. Based on a “modified” markdown sources, this template can deal with many outputs dialect basically supported by [Pandoc]
 
@@ -21,7 +19,7 @@ This repository provides a **full featured** template for writing a thesis disse
 ## Quick Start
 
 > **Note:** Now as a [wiki](https://github.com/dfolio/pandoc-df-thesis-template/wiki/Getting-Started);
-> and [documentation][pandoc-df-thesis-template] have started with a [Github-page][pandoc-df-thesis-template].
+> and [documentation][doc] have started with a [Github-page][doc].
 
 1. Install or check if the following prerequires are available: 
    - [Pandoc] (**mandatory**) &mdash; for converting the [Markdown] to the output format of your choice.
@@ -72,13 +70,14 @@ This repository provides a **full featured** template for writing a thesis disse
 
 Further informations on the directories organization are given in the [wiki](https://github.com/dfolio/pandoc-df-thesis-template/wiki) [How To?](https://github.com/dfolio/pandoc-df-thesis-template/wiki/How-To%3F) page.
 The template 
-[documentations][pandoc-df-thesis-template] have started with a [Github][pandoc-df-thesis-template].
+[documentations][doc] have started with a [Github][doc].
 
-## Contributes
+## Contributes 
 
-For any troubleshooting read, and (eventually) [create an issue](https://github.com/dfolio/pandoc-df-thesis-template/issues) on [pandoc-df-thesis-template](https://github.com/dfolio/pandoc-df-thesis-template/) [GitHub] repository.
 
-Feel free (under the [CC-By-4.0 terms](https://github.com/dfolio/pandoc-df-thesis-template/blob/master/LICENSE)) to modify/adapt this template for your own purpose (I will appreciate some [feedbacks :+1:][github-io]).
+For any troubleshooting read, and (eventually) [create an issue][this-issues] on [pandoc-df-thesis-template][this-repo] [GitHub] repository.
+
+Feel free (under the [CC-By-4.0 terms][license]) to modify/adapt this template for your own purpose (I will appreciate some [feedbacks :+1:][this-repo]).
 
 [DocBook]: http://docbook.org/ "DocBook is a semantic markup language for technical documentation."
 [docx]: https://en.wikipedia.org/wiki/Office_Open_XML "Docx is a zipped, XML-based file format developed by Microsoft for representing word processing"
@@ -99,6 +98,7 @@ Feel free (under the [CC-By-4.0 terms](https://github.com/dfolio/pandoc-df-thesi
 
 
 [travis-ci]: https://travis-ci.com/dfolio/pandoc-df-thesis-template "Travis status"
-[github-io]: http://github.com/dfolio/pandoc-df-thesis-template
-[pandoc-df-thesis-template]: http://dfolio.github.io/docs/pandoc-df-thesis-template/ "pandoc-df-thesis-template documentations"
-
+[this-repo]: http://github.com/dfolio/pandoc-df-thesis-template "pandoc-df-thesis-template GitHub repo"
+[this-issues]: http://github.com/dfolio/pandoc-df-thesis-template/issues "pandoc-df-thesis-template issues"
+[doc]: http://dfolio.github.io/docs/pandoc-df-thesis-template/ "pandoc-df-thesis-template documentations"
+[license]: https://github.com/dfolio/pandoc-df-thesis-template/blob/master/LICENSE "pandoc-df-thesis-template license (CC-BY-4.0)"
