@@ -1,0 +1,391 @@
+@charset "UTF-8";
+h1, h2, h3, h4, h5, h6 {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+h1, h2, h4 {
+  color: #455a64;
+}
+
+h1 {
+  page-break-before: always;
+  margin: 2rem auto;
+  padding-top: 2rem;
+  line-height: 2rem;
+  font-variant: small-caps;
+  border-bottom: 2pt solid #455a64;
+  text-align: right;
+  font-weight: 900;
+}
+
+h2:not(:first-child) {
+  margin-top: 1rem;
+}
+
+h2 {
+  font-weight: 800;
+}
+
+h3 {
+  margin-top: 0.6666666667rem;
+  color: #2E74B5;
+  font-weight: 600;
+}
+
+h4 {
+  margin-top: 0.5rem;
+  font-weight: 400;
+}
+
+p, figcaption, blockquote,
+.figure-title, .example-title, .equation-title, .sidebar-title {
+  orphans: 2;
+  widows: 2;
+  text-align: justify;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+br.SkipAndBreak {
+  page-break-before: always;
+  margin-bottom: 1rem;
+}
+
+img, .mediaobject {
+  padding: 0;
+  max-width: 100%;
+  height: auto;
+  max-width: 100% !important;
+  height: auto;
+  text-align: center;
+  margin: 0 auto;
+}
+
+svg {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+figure, .figure, .figure p,
+table, .table,
+.figure-contents {
+  justify-content: center;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  text-align: center !important;
+}
+
+figure, .figure, .table {
+  display: block;
+  padding: 0;
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.075);
+  margin-bottom: 1rem;
+}
+
+figure img, .figure img, .figure-contents img {
+  display: inline-block;
+}
+
+figcaption, caption,
+.figure-title, .example-title, .equation-title, .sidebar-title {
+  text-align: justify;
+  margin: auto 1em;
+  font-size: 0.98rem;
+  font-weight: normal;
+}
+
+table {
+  width: 99%;
+}
+
+table caption, .table-title {
+  display: table-caption;
+  caption-side: top;
+}
+
+table tr {
+  padding: 0;
+  margin: 0;
+  background-color: #f0f0f0;
+}
+
+table tr.even {
+  background-color: #fafafa;
+}
+
+table td {
+  margin: 0;
+  padding: 3px 5px;
+}
+
+> ul li,
+> ol li {
+  margin-bottom: 0.25rem;
+}
+
+li, dt, dd {
+  text-align: justify !important;
+}
+
+li p, dd p {
+  margin: 0;
+  padding: 0;
+}
+
+dl {
+  max-width: 100%;
+  padding: auto 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+  justify-content: flex-start !important;
+}
+
+dt, dd {
+  position: relative;
+  width: 100%;
+  min-height: 1px;
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+@media (min-width: 576px) {
+  dt {
+    flex: 0 0 16.6666666667%;
+    max-width: 16.6666666667%;
+  }
+}
+
+@media (min-width: 576px) {
+  dd {
+    flex: 0 0 83.3333333333%;
+    max-width: 83.3333333333%;
+  }
+}
+
+u, .underline, .uline {
+  text-decoration: underline;
+}
+
+strong, .strong {
+  font-weight: bolder;
+}
+
+/* */
+em, em em em, em em em em em {
+  font-style: italic;
+}
+
+em em, em em em em {
+  font-style: normal;
+}
+
+abbr {
+  font-size: 0.9em;
+}
+
+::selection {
+  background-color: rgba(208, 210, 216, 0.8);
+}
+
+/* */
+.foreignphrase,
+:lang(fr), .french,
+:lang(de), .german,
+:lang(la), .latin .unit,
+.number {
+  color: #101112;
+}
+
+.unit, .number {
+  font-family: serif;
+  font-size: 98.6%;
+}
+
+.foreignphrase,
+:lang(fr), .french,
+:lang(de), .german {
+  font-weight: 300;
+  font-family: "CMU Serif", "Computer Modern", "Times New Roman", serif;
+}
+
+:lang(de), .french {
+  quotes: "„" "“" "‚" "‘";
+}
+
+:lang(fr), .german {
+  quotes: "« " " »" "‹ " " ›";
+}
+
+:lang(la), .latin {
+  font-size: 99%;
+  font-weight: 250;
+  font-style: oblique;
+}
+
+.unit, .number {
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+}
+
+.number + .unit {
+  padding-left: 0.4em;
+}
+
+.footnote-ref {
+  font-size: 0.86rem;
+  vertical-align: super;
+}
+
+.footnotes {
+  width: 100%;
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+  font-size: 0.86rem;
+  line-height: 1.125rem;
+}
+.footnotes hr, .footnotes .footnote-hr {
+  border-top: 2px solid #101112;
+}
+.footnotes ol li {
+  margin: 0.5rem auto;
+}
+.footnotes p {
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.citation {
+  margin: 0;
+  padding: 0;
+  background-color: rgba(51, 255, 255, 0.1);
+}
+.citation:hover {
+  background-color: rgba(255, 51, 0, 0.4);
+}
+.citation + .citation {
+  margin-left: -0.25rem;
+}
+
+.references {
+  font-size: 0.875rem;
+}
+@media (min-width: 576px) {
+  .references {
+    font-size: 1rem;
+  }
+}
+
+.bib, #refs {
+  margin-left: 2em;
+}
+
+.bib ol {
+  list-style-type: none;
+  position: relative;
+  margin: 0;
+}
+
+.bib li p {
+  display: inline;
+  width: 90%;
+  text-align: justify;
+}
+
+.bib li {
+  counter-increment: section;
+  padding: 4px;
+}
+
+.bib ol > li:before {
+  text-align: right;
+  font-family: Calibri, Verdana, Helvetica, Arial, sans-serif;
+  font-size: 110%;
+  font-weight: 900;
+  color: var(--primary);
+  position: absolute;
+  left: -1.01em;
+  padding-top: 2px;
+}
+
+#refs {
+  font-size: 0.875rem;
+  line-height: 1.125rem;
+}
+#refs, #refs p {
+  margin: 0.5rem auto;
+  width: 99%;
+}
+#refs div:active, #refs div:focus, #refs div:focus-within {
+  background-color: rgba(208, 210, 216, 0.8);
+}
+#refs strong {
+  color: #455a64;
+}
+#ACL li:before {
+  content: "[ACL" counter(section, decimal) "] ";
+}
+
+#ACLN li:before {
+  content: "[ACLN" counter(section, decimal) "] ";
+}
+
+#DO li:before {
+  content: "[DO" counter(section, decimal) "] ";
+}
+
+#OS li:before {
+  content: "[OS" counter(section, decimal) "] ";
+}
+
+#ACT li:before {
+  content: "[ACT" counter(section, decimal) "] ";
+}
+
+#INV li:before {
+  content: "[INV" counter(section, decimal) "] ";
+}
+
+#COM li:before {
+  content: "[COM" counter(section, decimal) "] ";
+}
+
+h1 {
+  page-break-before: always;
+}
+
+@media print {
+  .thesis-header {
+    page-break-after: always;
+  }
+
+  .thesis-header,
+.footer {
+    background-color: rgba(69, 90, 100, 0.9) !important;
+    box-shadow: none;
+  }
+  .thesis-header, .thesis-header h1, .thesis-header .title, .thesis-header .subtitle, .thesis-header .authors, .thesis-header a,
+.footer,
+.footer h1,
+.footer .title,
+.footer .subtitle,
+.footer .authors,
+.footer a {
+    color: black;
+  }
+
+  .thesis-toc, .btn-goto {
+    display: none;
+  }
+
+  abbr {
+    text-decoration: none;
+  }
+}
+
+/*# sourceMappingURL=pandoc_thesis_print_html.css.map */
