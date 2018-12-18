@@ -60,8 +60,8 @@ before_install:
 - mkdir -p ${HOME}/pp 
 - travis_retry  curl -L https://cdsoft.fr/pp/pp.tgz | tar xz -C ${HOME}/pp 
 - cabal update 
-- cabal info panoc
-- cabal info panoc-citeproc
+- cabal info pandoc
+- cabal info pandoc-citeproc
 
 # Build dependencies
 install:
