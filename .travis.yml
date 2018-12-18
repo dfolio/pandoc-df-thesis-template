@@ -16,10 +16,10 @@ cache:
   bundler: true
   apt: true
   directories:
-  - $HOME/.bundle
-  - $HOME/.cabal
-  - $HOME/.ghc
-  - $HOME/.stack
+  - ${$HOME}/.bundle
+  - ${$HOME}/.cabal
+  - ${$HOME}/.ghc
+  - ${$HOME}/.stack
 
 #  directories:
 #  - "node_modules"
@@ -33,7 +33,7 @@ env:
   - GIT_AUTHOR_EMAIL: noreply@travis-ci.org
   - TZ="Europe/Zurich"
   - GHC_OPTIONS="-O0 -Werror"
-  - PATH=$HOME/.local/bin:$PATH:.
+  - PATH=${$HOME}/.local/bin:$PATH:.
   - STACK_YAML=stack.yaml
 compiler: ": #GHC 8.6"
 
@@ -42,61 +42,38 @@ addons:
     update: true
     packages:
       - libgmp-dev
-#      - pandoc
-#      - texlive-full
-#      - texlive-generic-recommended
-#      - texlive-fonts-recommended
-#      - texlive-latex-recommended
-#      - texlive-luatex
-#      - texlive-xetex
-#      - biber
+      - biber
+#      - xindy
 
-#  - sudo apt-get update -qq
-#  - sudo apt-get install -y pandoc
-#  - sudo apt-get install -y texlive-full
-#  - sudo apt-get install -y texlive-luatex
-#  - sudo apt-get install -y texlive-xetex
-#  - sudo apt-get install -y biber
 
 matrix:
   fast_finish: true
 
-
-  
 before_install:
 - unset CC
 - export PATH=/opt/ghc/$GHCVER/bin:$PATH
 ## Download and unpack the stack executable
 - mkdir -p ~/.local/bin
-- export PATH=$HOME/.local/bin:$PATH:.
+- export PATH=${$HOME}/.local/bin:$PATH:.
 - STACK_OS=linux-x86_64
 - travis_retry curl -L https://www.stackage.org/stack/$STACK_OS | tar xz --strip-components=1 -C ~/.local/bin
 - mkdir -p ${HOME}/pp 
-#- travis_retry curl -L https://cdsoft.fr/pp/pp-linux-x86_64.txz| tar -Jxv -C ${HOME}/pp
 - travis_retry  curl -L https://cdsoft.fr/pp/pp.tgz | tar xz -C ${HOME}/pp 
 - cabal update 
 
 # Build dependencies
 install:
-- cabal install pandoc-crossref
+- cabal install --prefix=${$HOME}/.local/ pandoc-crossref
+# build and install pp
 - pushd ${HOME}/pp
 - pandoc -v
 - travis_wait 30 stack --no-terminal setup
-#- travis_wait 90 stack --no-terminal build
-# - ldd -v -r ./pp
-#- stack --no-terminal --install-ghc test --only-dependencies
-#- stack --no-terminal test --haddock --no-haddock-deps
 - make
 - make install
 - popd
 
 #before_script:
 #  - which pp
-#- ldd -v -r ./pp
-# 2018-12-13 16:11:19 :: Error
-#symbol logf, version GLIBC_2.27 not defined in file libm.so.6 with link time reference	(./pp)
-#symbol expf, version GLIBC_2.27 not defined in file libm.so.6 with link time reference	(./pp)
-#symbol powf, version GLIBC_2.27 not defined in file libm.so.6 with link time reference	(./pp)
 
 script:
 # Build the package, its tests, and its docs and run the tests
