@@ -16,10 +16,10 @@ cache:
   bundler: true
   apt: true
   directories:
-  - ${$HOME}/.bundle
-  - ${$HOME}/.cabal
-  - ${$HOME}/.ghc
-  - ${$HOME}/.stack
+  - ${HOME}/.bundle
+  - ${HOME}/.cabal
+  - ${HOME}/.ghc
+  - ${HOME}/.stack
 
 #  directories:
 #  - "node_modules"
@@ -33,7 +33,7 @@ env:
   - GIT_AUTHOR_EMAIL: noreply@travis-ci.org
   - TZ="Europe/Zurich"
   - GHC_OPTIONS="-O0 -Werror"
-  - PATH=${$HOME}/.local/bin:$PATH:.
+  - PATH=${HOME}/.local/bin:$PATH:.
   - STACK_YAML=stack.yaml
 compiler: ": #GHC 8.6"
 
@@ -54,7 +54,7 @@ before_install:
 - export PATH=/opt/ghc/$GHCVER/bin:$PATH
 ## Download and unpack the stack executable
 - mkdir -p ~/.local/bin
-- export PATH=${$HOME}/.local/bin:$PATH:.
+- export PATH=${HOME}/.local/bin:${HOME}/.cabal/bin:$PATH:.
 - STACK_OS=linux-x86_64
 - travis_retry curl -L https://www.stackage.org/stack/$STACK_OS | tar xz --strip-components=1 -C ~/.local/bin
 - mkdir -p ${HOME}/pp 
@@ -63,7 +63,7 @@ before_install:
 
 # Build dependencies
 install:
-- cabal install --prefix=${$HOME}/.local/ pandoc-crossref
+- cabal install --prefix=${HOME}/.local/ pandoc-crossref
 # build and install pp
 - pushd ${HOME}/pp
 - pandoc -v
