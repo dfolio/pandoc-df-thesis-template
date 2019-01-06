@@ -1197,7 +1197,6 @@ $(TEXDIR)/$(MAIN_DOC_BASENAME).tex:$(files_tex) $(tex_deps)
 endif
 
 # Merge all bibliography in BIB
-#
 .PHONY: biblio $(BIB)
 biblio:$(BIB)
 $(BIB):$(BIBFILES)
