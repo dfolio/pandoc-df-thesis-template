@@ -69,15 +69,22 @@ This repository provides a **full featured** template for writing a thesis disse
    provides some _help_ on the other targets. 
 
 Further informations on the directories organization are given in the [wiki](https://github.com/dfolio/pandoc-df-thesis-template/wiki) [How To?](https://github.com/dfolio/pandoc-df-thesis-template/wiki/How-To%3F) page.
-The template 
-[documentations][doc] have started with a [Github][doc].
+The template [documentations][doc] have started with a [Github pages][doc].
 
 ## Contributes 
-
 
 For any troubleshooting read, and (eventually) [create an issue][this-issues] on [pandoc-df-thesis-template][this-repo] [GitHub] repository.
 
 Feel free (under the [CC-By-4.0 terms][license]) to modify/adapt this template for your own purpose (I will appreciate some [feedbacks :+1:][this-repo]).
+
+
+1. Fork it ( http://github.com/dfolio/pandoc-df-thesis-template )
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create a new Pull Request
+6. Please give [me your feedbacks][doc] or [share the template][doc] on your social-networks (show the [Github pages][doc] [documentations][doc] for this)
+
 
 [DocBook]: http://docbook.org/ "DocBook is a semantic markup language for technical documentation."
 [docx]: https://en.wikipedia.org/wiki/Office_Open_XML "Docx is a zipped, XML-based file format developed by Microsoft for representing word processing"
