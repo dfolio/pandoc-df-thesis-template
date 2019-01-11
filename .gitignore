@@ -8,6 +8,7 @@ vendor/
 .sass-cache/
 
 .remarkrc
+.github_changelog_generator
 
 *(copie)*
 ## Core latex/pdflatex auxiliary files:

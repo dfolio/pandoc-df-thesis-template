@@ -1682,6 +1682,13 @@ version: VERSION
 	$(QUIET)$(echo_dt) "version: v$(VERSION)"
 #	$(SED) -i 's/"version": .*/"version": "$(VERSION)",/' package.json
 #	$(SED) -i 's/version: .*/version: $(VERSION)/' $(VARSDATA)
+
+CHANGELOG_GEN  ?= github_changelog_generator
+changelog:
+	$(QUIET)$(call echo-build,$(CHANGELOG_GEN))
+	$(CHANGELOG_GEN)
+
+
 #
 # HELP TEXT
 #
