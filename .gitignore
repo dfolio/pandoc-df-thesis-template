@@ -1,14 +1,14 @@
 #directories to ignore
 _html/
+.sass-cache/
+build/
 _tex/
 _docbook/
-build/
 node_modules/
 vendor/
-.sass-cache/
+
 
 .remarkrc
-.github_changelog_generator
 
 *(copie)*
 ## Core latex/pdflatex auxiliary files:
