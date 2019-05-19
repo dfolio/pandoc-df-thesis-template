@@ -629,6 +629,12 @@ define path-norm
 $(if $(USE_CYGPATH),$(shell $(CYGPATH) -u "$1"),$1)
 endef
 
+make_dir=[ ! -d "$1" ] && $(MKDIR) $1; 
+define check_dir
+  cdir="$(dir $1)" ; $(call echo-info,"Check $$cdir for $1");\
+  $(call make_dir,$$cdir)
+endef
+
 # $(call output-all-programs,[<output file>])
 define output-all-programs
   [ -f '$(this_file)' ] && \
@@ -881,7 +887,8 @@ INKSCAPE_FLAGS  +=--without-gui --vacuum-defs --export-area-page
 # Creation from svg files
 # $(call convert-svg,<svg>,<out_fig>, $(GRAY))
 define convert-svg
-$(INKSCAPE) $(INKSCAPE_FLAGS) '$(strip $1)' $(call get-inkscape-export,$2)='$(strip $2)'
+  $(call check_dir,$2) \
+  $(INKSCAPE) $(INKSCAPE_FLAGS) '$(strip $1)' $(call get-inkscape-export,$2)='$(strip $2)'
 endef
 endif
 
@@ -957,10 +964,10 @@ dir_deps  += $(OUTDIR) $(OUT_ASSETSDIR) $(MDHDIR) $(HTMLDIR) $(MDXDIR) $(XMLDIR)
 base_deps += $(METADATA) $(VARSDATA) $(PP_MACROS) #$(OUT_ASSETSDIR) $(OUT_FIGDIR)
 bib_deps  += $(CSL) $(BIBFILES)
 bibtex_deps+= $(BIBFILES) $(BIBFILES:$(BIBDIR)/%=$(OUT_BIBDIR)/%)   #$(OUT_BIBDIR)
-mdt_deps  += $(files_mdt) $(base_deps) $(PP_TEX_MACROS) $(bib_deps) #$(MDTDIR)
-tex_deps  += $(mdt_deps) $(TEMPLATEDIR)/template.latex $(tex_sty)   #$(TEXDIR)
+mdt_deps  += $(base_deps) $(PP_TEX_MACROS) $(bib_deps) #$(MDTDIR)
+tex_deps  += $(files_mdt) $(mdt_deps) $(TEMPLATEDIR)/template.latex $(tex_sty)   #$(TEXDIR)
 tex_deps  += $(bibtex_deps) #$(OUT_FONTDIR)/
-#tex_deps  += $(fig_pdf)
+tex_deps  += $(fig_pdf)
 pdf_deps  +=
 ifdef GLOSSARIES
 tex_deps += $(GLOSSARIES_TEX)
@@ -1266,7 +1273,7 @@ endif
 	fi;
 
 #.INTERMEDIATE: $(files_mdt)
-$(MDTDIR)/%.mdt:$(MDDIR)/%.$(MDEXT) | $(MDTDIR)
+$(MDTDIR)/%.mdt:$(MDDIR)/%.$(MDEXT) $(mdt_deps)| $(MDTDIR)
 	$(QUIET)$(call echo-run,$(PANDOC),$@,$<)
 	$(PP) $(PP_FLAGS) -DLATEX=1 -import=$(PP_MACROS) $< | \
 	  $(PANDOC) -f markdown$(PANDOC_MDEXT) $(PANDOC_FLAGS) \
@@ -1358,6 +1365,7 @@ $(SASS):$(NODEDIR)/sass
 #  Intermediate Figures rules
 # Converts svg files into .eps files
 #
+
 .PHONY: svg
 svg:$(fig_svg) $(OUT_FIGDIR)
 $(OUT_FIGDIR)/%.svg:$(MEDIADIR)/%.svg
@@ -1383,7 +1391,7 @@ $(OUT_FIGDIR)/%.svg:$(MEDIADIR)/%.tif
 	$(QUIET)$(call echo-fig,$^,$@)
 	$(QUIET)$(call convert-raw,$<,$@,$(GRAY))
 
-$(OUT_FIGDIR)/%.pdf:$(MEDIADIR)/%.svg
+$(OUT_FIGDIR)/%.pdf:$(MEDIADIR)/%.svg $(OUT_FIGDIR)
 	$(QUIET)$(call echo-fig,$^,$@)
 	$(QUIET)$(call convert-svg,$<,$@)
 
@@ -1810,6 +1818,21 @@ export help_text
 .PHONY: help
 help:
 	$(ECHO) "$$help_text" | $(PANDOC) -s  -f markdown -t man | man -l -
+
+
+_show_fig:
+	$(QUIET)$(echo_dt) "== Figures? =="
+	$(QUIET)$(call echo-list,$(sort $(figures)))
+	$(QUIET)$(echo_dt) "== Mediafiles =="
+	$(QUIET)$(call echo-list,$(sort $(mediafiles)))
+
+_show_html:
+	$(QUIET)$(echo_dt) "== HTML =="
+	$(QUIET)$(call echo-list,$(sort $(files_html)))
+
+_show_tex:
+	$(QUIET)$(echo_dt) "== TeX =="
+	$(QUIET)$(call echo-list,$(sort $(files_tex)))
 
 #$(call path-norm,)
 .SECONDEXPANSION:
