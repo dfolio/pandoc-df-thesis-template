@@ -505,9 +505,10 @@ move-if-exists            = $(call test-exists,$1) && $(MV) '$(strip $1)' '$(str
 # If no RSYNC is available back to cp
 USE_RSYNC := $(call have-cmd,$(RSYNC))
 define copy-helper
-$(if $(USE_RSYNC),\
-  $(RSYNC) $(RSYNC_FLAGS) '$(strip $1)' '$(strip $2)',\
-  $(CP) '$(strip $1)' '$(strip $2)' )
+  $(call check_dir,$2) \
+  $(if $(USE_RSYNC),\
+    $(RSYNC) $(RSYNC_FLAGS) '$(strip $1)' '$(strip $2)',\
+    $(CP) '$(strip $1)' '$(strip $2)' )
 endef
 
 # Copy source to destination only if source exist
@@ -596,11 +597,16 @@ echo-info     = $(echo_dt) "$(C_INFO)$1$(reset)"
 echo-success  = $(echo_dt) "$(green)$(bold)$1$(reset)"
 echo-failure  = $(echo_dt) "$(red)$(bold)$1$(reset)"
 
+define echo-verb
+	if [ $(VERBOSE) -gt $(if $2,$2,1) ]; then \
+  	$(call echo-info,$1) ; \
+	fi;
+endef
 
 # $(call echo-build,<target>,[<run number>])
-echo-build    = $(echo_dt) "\t$(blue)$(bold)==Build==$(reset)$(blue)\t$1$(if $2, ($2),)...$(reset)"
+echo-build    = $(echo_dt) "\t$(blue)$(bold)==Build $1==$(reset)$(blue)\t$(if $2, $2,)$(if $3, ($3),)...$(reset)"
 # $(call echo-run,<prog>,<arg>)
-echo-run      = $(echo_dt) "\t$(cyan)>>$(bold)Run $1$(reset)$(cyan)$(if $3, $3-->,)$(if $2,$2,...)$(reset)"
+echo-run      = $(echo_dt) "\t$(cyan)>>$(bold)Run $1$(reset)$(cyan)$(if $3, $3-->,)$(if $2, $2,...)$(reset)"
 # $(call echo-copy,src,dest)
 echo-copy     = $(echo_dt) "\t$(cyan)>>Copy $1$(if $2,\t$2 $(if $3,--> $3,),)...$(reset)"
 # $(call echo-copy,src,dest)
@@ -631,7 +637,7 @@ endef
 
 make_dir=[ ! -d "$1" ] && $(MKDIR) $1; 
 define check_dir
-  cdir="$(dir $1)" ; $(call echo-info,"Check $$cdir for $1");\
+  cdir="$(dir $1)" ; $(call echo-verb,Check $$cdir for $1,2) \
   $(call make_dir,$$cdir)
 endef
 
@@ -663,7 +669,7 @@ TEXLOG    ?=$(ROOTDIR)/$(TEXDIR)/build.log
 #
 # $(call run-latex,<tex file stem, e.g., $*>,[extra LaTeX args])
 define run-latex
-$(call echo-run,$(latex_build_program),$1); \
+$(call echo-run,$(latex_build_program),$1,$2); \
 $(latex_build_program) -jobname='$(notdir $1)'\
   -interaction=batchmode -file-line-error \
   $(LATEX_OPTS) $(if $2,$2,) $1 $(call output-to-log,$(TEXLOG))
@@ -963,15 +969,15 @@ fig_emf     := $(figures:%=$(OUTDIR)/%.emf)
 dir_deps  += $(OUTDIR) $(OUT_ASSETSDIR) $(MDHDIR) $(HTMLDIR) $(MDXDIR) $(XMLDIR) $(MDTDIR) $(OUT_FIGDIR) $(OUT_BIBDIR) $(CSS_BUILDDIR) $(CSS_DISTDIR)
 base_deps += $(METADATA) $(VARSDATA) $(PP_MACROS) #$(OUT_ASSETSDIR) $(OUT_FIGDIR)
 bib_deps  += $(CSL) $(BIBFILES)
-bibtex_deps+= $(BIBFILES) $(BIBFILES:$(BIBDIR)/%=$(OUT_BIBDIR)/%)   #$(OUT_BIBDIR)
+bibtex_deps+= $(BIBFILES:$(BIBDIR)/%=$(ROOTDIR)/$(OUT_BIBDIR)/%)   #$(OUT_BIBDIR)
 mdt_deps  += $(base_deps) $(PP_TEX_MACROS) $(bib_deps) #$(MDTDIR)
 tex_deps  += $(files_mdt) $(mdt_deps) $(TEMPLATEDIR)/template.latex $(tex_sty)   #$(TEXDIR)
 tex_deps  += $(bibtex_deps) #$(OUT_FONTDIR)/
 tex_deps  += $(fig_pdf)
-pdf_deps  +=
 ifdef GLOSSARIES
 tex_deps += $(GLOSSARIES_TEX)
 endif
+pdf_deps  +=  $(tex_deps)
 
 mdh_deps  += $(base_deps) $(PP_HTML_MACROS) $(bib_deps) #$(MDHDIR)
 html_deps += $(mdh_deps) $(files_mdh) #$(HTMLDIR) $(OUT_FIGDIR)
@@ -1082,7 +1088,7 @@ html-deps:
 ifeq ($(BUILD_OUTPUT_MODE), single)
 html_deps += $(TEMPLATEDIR)/template.html5
 $(HTMLDIR)/$(MAIN_DOC_BASENAME).html: $(html_deps)
-	$(QUIET)$(call echo-run,$(PANDOC),,$@)
+	$(QUIET)$(call echo-run,$(PANDOC),$@,$<)
 	$(QUIET)$(PANDOC) -f markdown$(PANDOC_MDEXT) \
 	  $(PANDOC_FLAGS) $(VARSDATA) $(PANDOC_HTML_FLAGS)\
 	  $(files_mdh) -t html5 -o $@
@@ -1094,7 +1100,7 @@ endif
 epub: $(OUTDIR)/$(MAIN_DOC_BASENAME).epub
 
 $(OUTDIR)/$(MAIN_DOC_BASENAME).epub:$(epub_deps)
-	$(QUIET)$(call echo-run,$(PANDOC),,$@)
+	$(QUIET)$(call echo-run,$(PANDOC),$@,$<)
 	$(QUIET)$(PANDOC) -f markdown$(PANDOC_MDEXT) \
 	  $(PANDOC_FLAGS) $(VARSDATA) $(PANDOC_EPUB_FLAGS)\
 	  $(files_mdh) -t epub3 -o $@
@@ -1105,7 +1111,7 @@ $(OUTDIR)/$(MAIN_DOC_BASENAME).epub:$(epub_deps)
 docx:  $(OUTDIR)/$(MAIN_DOC_BASENAME).docx
 
 $(OUTDIR)/$(MAIN_DOC_BASENAME).docx:$(docx_deps)
-	$(QUIET)$(call echo-run,$(PANDOC),,$@)
+	$(QUIET)$(call echo-run,$(PANDOC),$@,$<)
 	$(QUIET)$(PANDOC) -f markdown$(PANDOC_MDEXT) \
 	  $(PANDOC_FLAGS) $(VARSDATA) $(PANDOC_DOCX_FLAGS)\
 	  $(files_mdh) -t docx -o $@
@@ -1116,7 +1122,7 @@ $(OUTDIR)/$(MAIN_DOC_BASENAME).docx:$(docx_deps)
 odt:  $(OUTDIR)/$(MAIN_DOC_BASENAME).odt
 
 $(OUTDIR)/$(MAIN_DOC_BASENAME).odt:$(odt_deps)
-	$(QUIET)$(call echo-run,$(PANDOC),,$@)
+	$(QUIET)$(call echo-run,$(PANDOC),$@,$<)
 	$(QUIET)$(PANDOC) -f markdown$(PANDOC_MDEXT) \
 	  $(PANDOC_FLAGS) $(VARSDATA) $(PANDOC_ODT_FLAGS)\
 	  $(files_mdh) -t odt -o $@
@@ -1130,7 +1136,7 @@ xml-chunk:$(XMLDIR)/$(MAIN_DOC_BASENAME).xml
 ifeq ($(call have-cmd,$(XSLTPROC)),:)
 	$(QUIET)$(call echo-warning,"XML/DocBook outputs are unmaintened")
 	$(QUIET)$(MKDIR) $(CHUNKDIR)/
-	$(QUIET)$(call echo-run,$(XSLTPROC),,$@)
+	$(QUIET)$(call echo-run,$(XSLTPROC),$@,$<)
 	$(QUIET)$(XSLTPROC) $(XSLT_FLAGS) -o $(CHUNKDIR)/ $(XSL) $<
 else
 	$(QUIET)$(call echo-failure,"it seems that you don\'t have xsltrproc on your system.")
@@ -1138,7 +1144,7 @@ else
 endif
 $(XMLDIR)/$(MAIN_DOC_BASENAME).xml: $(xml_deps)
 	$(QUIET)$(call echo-warning,"XML/DocBook '$@' is unmaintened")
-	$(QUIET)$(call echo-run,$(PANDOC),,$@)
+	$(QUIET)$(call echo-run,$(PANDOC),$@,$<)
 	$(QUIET)$(PANDOC) -f markdown$(PANDOC_MDEXT) \
 	  $(PANDOC_FLAGS) $(VARSDATA) $(PANDOC_XML_FLAGS)\
 	  $(files_mdx) -t docbook5 -o $@
@@ -1158,14 +1164,14 @@ files_mainmatter='$(files_mainmatter)' \
 files_backmatter='$(files_mainmatter)'
 endef
 
-$(OUTDIR)/$(MAIN_DOC_BASENAME).pdf:$(pdf_deps) \
+$(OUTDIR)/$(MAIN_DOC_BASENAME).pdf: \
   $(call path-norm,$(TEXDIR)/$(MAIN_DOC_BASENAME).pdf)
-	$(QUIET)$(call echo-run,"Move",$<,$@)
+	$(QUIET)$(call echo-run,"Move",$@,$<)
 	$(call replace-temporary-if-different-and-remove,$<,$@)
 	$(call echo-end-target,$@)
 
 $(TEXDIR)/$(MAIN_DOC_BASENAME).pdf:$(call path-norm,$(TEXDIR)/$(MAIN_DOC_BASENAME).tex)
-	$(QUIET)$(call echo-build,$<,$@)
+	$(QUIET)$(call echo-build,PDF files,$@,0)
 	$(QUIET)cd $(TEXDIR)&&$(MAKE) -f $(PWD)/$(this_file) $(REMAKE_FLAGS) \
 	  BUILD_BIB_STRATEGY='$(strip $(call get-bib-strategy,$(TEXDIR)/$(MAIN_DOC_BASENAME).tex))' \
 	"$(MAIN_DOC_BASENAME).pdf" && cd -
@@ -1181,7 +1187,7 @@ tex: $(TEXDIR)/$(MAIN_DOC_BASENAME).tex
 ifeq ($(BUILD_OUTPUT_MODE), single)
 $(TEXDIR)/$(MAIN_DOC_BASENAME).tex: $(files_frontmatter_tex) $(files_backmatter_tex) $(tex_deps)
 	$(QUIET)$(call echo-build,LaTeX files,$@)
-	$(QUIET)$(call echo-run,$(PANDOC),...,$@)
+	$(QUIET)$(call echo-run,$(PANDOC),$@)
 	$(QUIET)$(MKDIR) $(TEXDIR)
 	$(QUIET)$(PANDOC) -f markdown$(PANDOC_MDEXT) \
 	  $(PANDOC_FLAGS) $(VARSDATA) $(PANDOC_TEX_FLAGS)\
@@ -1194,7 +1200,7 @@ ifeq ($(BUILD_OUTPUT_MODE),multi)
 $(TEXDIR)/$(MAIN_DOC_BASENAME).tex:$(files_tex) $(tex_deps)
 	$(QUIET)$(call echo-build,LaTeX files,$@)
 	$(call echo-list,$(foreach f,$(files_mainmatter_tex),\\include{$(notdir $(basename $(f)))})) >$(TEXDIR)/$(MAIN_DOC_BASENAME)_inc
-	$(QUIET)$(call echo-run,$(PANDOC),...,$@)
+	$(QUIET)$(call echo-run,$(PANDOC),$@)
 	$(PANDOC) $(PANDOC_FLAGS) $(VARSDATA) $(PANDOC_TEX_FLAGS)\
 	  $(foreach f,$(files_frontmatter_tex),-V frontmatter=$(notdir $(basename $(f))))\
 	  $(foreach f,$(files_backmatter_tex),-V backmatter=$(notdir $(basename $(f)))) \
@@ -1207,16 +1213,17 @@ endif
 .PHONY: biblio $(BIB)
 biblio:$(BIB)
 $(BIB):$(BIBFILES)
-	$(QUIET)$(call echo-build,"Merge",$(BIBFILES),$@)
+	$(QUIET)$(call echo-build,"Merge BiB",$(BIBFILES) ->,$@)
 	$(QUIET)$(CAT) $(BIBFILES) > $(BIB)
 
 $(OUT_BIBDIR)/%.bib:$(BIBDIR)/%.bib | $(OUT_BIBDIR)
 	$(QUIET)$(call echo-copy,bib,$<,$@)
 	$(QUIET)$(call copy-if-exists,$<,$@)
-
+	
 $(ROOTDIR)/$(OUT_BIBDIR)/%.bib:$(ROOTDIR)/$(BIBDIR)/%.bib
 	$(QUIET)$(call echo-copy,bib+,$<,$@)
 	$(QUIET)$(call copy-if-exists,$<,$@)
+
 #########################
 # Intermediate MDT rules for LaTeX/PDF
 # Keep the generated .tex files around for debugging if needed.
@@ -1228,8 +1235,12 @@ $(EGREP) '^(.*Rerun .*|No file $1\.[^.]+\.)$$' $1.log \
 endef
 
 # Build pdf from LaTeX files:
+define test-rerun-bib
+$(EGREP) -q -v '.*Warning.*(re)?run.*Bib.*' $1.log 
+endef
 
 %.pdf:%.tex %.bbl %.aux
+	$(QUIET)$(call echo-build,$*.pdf,<- $<,1);
 	$(QUIET)fatal=`$(call colorize-latex-errors,$*.log)`; \
 	if [ x"$$fatal" != x"" ]; then \
 		$(ECHO) "$$fatal"; \
@@ -1237,8 +1248,12 @@ endef
 	fi; \
 	for i in 2 3 4; do \
 		if $(call test-run-again,$*); then \
-	    $(echo_dt) "$(C_INFO)Need to re-run LaTeX...$(reset)";\
-			$(call echo-build,$<,$*.pdf,$$i); \
+  		if $(call test-rerun-bib,$*); then \
+	     $(call echo-info, "Need to re-run $(TEX_BIB_STRATEGY)...");\
+	      $(call run-bibtex,$<,$@,$*.bcf) ;\
+  		fi; \
+	    $(call echo-info, "Need to re-run LaTeX...");\
+			$(call echo-build,$*.pdf,<- $<,$$i); \
 			$(call run-latex,$*); \
 		else \
 			break; \
@@ -1247,23 +1262,23 @@ endef
 
 #biblio
 ifeq "$(strip $(TEX_BIB_STRATEGY))" "natbib"
-%.bbl:%.aux
+%.bbl:%.aux $(bibtex_deps)
 	$(QUIET)$(if $(filter %.bib,$^);\
-		$(call echo-build,$(filter %.bib,$?) $*.aux,$@); \
+		$(call echo-build,$@, <- $(filter %.bib,$?) $*.aux); \
 		$(call run-bibtex,$*); \
 	  $(call echo-end-target,$@); \
 	)
 endif
 ifeq "$(strip $(TEX_BIB_STRATEGY))" "biblatex"
-%.bbl:%.bcf %.aux
-	$(QUIET)$(call echo-build,$<,$@); \
+%.bbl:%.bcf %.aux $(bibtex_deps)
+	$(QUIET)$(call echo-build,$@,$<); \
 	$(call run-bibtex,$<,$@,$*.bcf) ;\
 	$(call echo-end-target,$@)
 endif
 
 %.aux %.bcf %.fls:%.tex
-	$(QUIET)$(call echo-build,$<,$*.pdf,1);\
-	$(echo_dt) "$(C_INFO)Create/Update $*.aux $*.bcf and $*.fls$(reset)";\
+	$(QUIET)$(call echo-build,$*.pdf,<- $<,1);\
+	$(call echo-info, "Create/Update $*.aux $*.bcf and $*.fls");\
 	$(call run-latex,$*,-recorder)|| : ; \
 	$(call die-on-no-aux,$*) ;\
 	fatal=`$(call colorize-latex-errors,$*.log)`; \
@@ -1311,16 +1326,16 @@ $(MDXDIR)/%.mdx:$(MDDIR)/%.$(MDEXT) | $(MDXDIR)
 ################################################################################
 #  Intermediate Glossaries rules
 $(GLOSSARIES_TEX):$(GLOSSARIES) $(PP_TEX_MACROS) $(PP_MACROS)
-	$(QUIET)$(call echo-run,$(PP),$<,$@)
+	$(QUIET)$(call echo-run,$(PP),$@,$<)
 	$(PP) $(PP_FLAGS) -DLATEX=1 -import=$(PP_MACROS) $(GLOSSARIES) > $(GLOSSARIES_TEX)
 
 $(GLOSSARIES_MDH) $(PP_GLO_HTML): $(GLOSSARIES) $(PP_HTML_MACROS) $(PP_MACROS)
-	$(QUIET)$(call echo-run,$(PP),$<,$@)
+	$(QUIET)$(call echo-run,$(PP),$@,$<)
 	$(QUIET)$(MKDIR) $(MDHDIR)
 	$(PP) $(PP_FLAGS) -DHTML=1 -import=$(PP_MACROS) -D_PP_GLO_TMP=$(PP_GLO_HTML) $(GLOSSARIES) > $(GLOSSARIES_MDH)
 
 $(GLOSSARIES_XML) $(PP_GLO_XML): $(GLOSSARIES) $(PP_XML_MACROS) $(PP_MACROS)
-	$(QUIET)$(call echo-run,$(PP),$<,$@)
+	$(QUIET)$(call echo-run,$(PP),$@,$<)
 	$(QUIET)$(MKDIR) $(MDXDIR)
 	$(PP) $(PP_FLAGS) -DXML=1 -import=$(PP_MACROS) -D_PP_GLO_TMP=$(PP_GLO_XML)  $(GLOSSARIES) > $(GLOSSARIES_XML)
 
@@ -1330,7 +1345,7 @@ $(GLOSSARIES_XML) $(PP_GLO_XML): $(GLOSSARIES) $(PP_XML_MACROS) $(PP_MACROS)
 .PHONY: css_dist
 ifdef USE_SASS
 $(CSS_BUILDDIR)/%.css:$(SCSSDIR)/%.scss $(css_deps) | $(CSS_BUILDDIR) $(SASS)
-	$(QUIET)$(call echo-run,$(SASS),$<,$@)
+	$(QUIET)$(call echo-run,$(SASS),$@,$<)
 	$(SASS) $(SASS_FLAGS) $< $@
 
 css_dist: $(patsubst $(CSS_BUILDDIR)/%.css,$(CSS_DISTDIR)/%.css,$(wildcard $(CSS_BUILDDIR)/*.css))
@@ -1432,7 +1447,7 @@ $(OUTDIR)%/:
 # Install a npm module
 $(NODEDIR)/%/:
 	$(QUIET)$(ECHO) "$(C_INFO) $* will be installed in the local folder$(reset)"
-	$(QUIET)$(call echo-run,$(NPM)++,$*,$@)
+	$(QUIET)$(call echo-run,$(NPM)++,$@,$*)
 	$(QUIET)$(NPM) install $*
 	$(QUIET)$(ECHO) "$(C_INFO) $* now in '$@'$(reset)"
 
@@ -1506,15 +1521,15 @@ $(htmlmuli_temp)/%.mdh:$(MDHDIR)/%.mdh
 	$(QUIET)$(call copy-if-exists,$<,$@)
 
 $(htmlmuli_temp)/$(MAIN_DOC_BASENAME).mdh: $(htmlmulti_mdh) $(htmlmuli_temp)/variables.yml
-	$(QUIET)$(call echo-run,"Prepare Markdown for jekyll [1]",:,$@)
+	$(QUIET)$(call echo-run,"Prepare Markdown for jekyll [1]",$@)
 	$(PANDOC) -f markdown$(PANDOC_MDEXT) $(PANDOC_FLAGS) $(PANDOC_MDH_FLAGS) -t markdown$(PANDOC_MDEXT) $(htmlmulti_mdh) -o "$@"
 
 $(htmlmuli_temp)/%.md_tmp:$(htmlmuli_temp)/%.mdh
-	$(QUIET)$(call echo-run,"Prepare Markdown for jekyll [2]",$<,$@)
+	$(QUIET)$(call echo-run,"Prepare Markdown for jekyll [2]",$@,$<)
 	$(PANDOC) -f markdown$(PANDOC_MDEXT) $(PANDOC_FLAGS) $(PANDOC_MDH_FLAGS) -t markdown$(PANDOC_MDEXT) $< -o "$@"
 
 $(htmlmuli_temp)/%.$(MDEXT):$(htmlmuli_temp)/%.md_tmp $(htmlmuli_temp)/%.mdh
-	$(QUIET)$(call echo-run,"Prepare Markdown for jekyll [3]",$<,$@)
+	$(QUIET)$(call echo-run,"Prepare Markdown for jekyll [3]",$@,$<)
 	$(QUIET)$(ECHO) -e "---\nlayout: default\n"> $@
 	$(EGREP) '^# ' $< | $(SED) -e 's/^# \(.*\)[[:space:]]*\({#.*}\)/title: \1/g' >> $@
 	$(ECHO) "section: "  >> $@
@@ -1826,6 +1841,12 @@ _show_fig:
 	$(QUIET)$(echo_dt) "== Mediafiles =="
 	$(QUIET)$(call echo-list,$(sort $(mediafiles)))
 
+_show_bib:
+	$(QUIET)$(echo_dt) "== Biblio =="
+	$(QUIET)$(call echo-list,$(sort $(BIBFILES)))
+	$(QUIET)$(echo_dt) "    DEPS: $(bib_deps)"
+	$(QUIET)$(echo_dt) "TeX DEPS: $(bibtex_deps)"
+	
 _show_html:
 	$(QUIET)$(echo_dt) "== HTML =="
 	$(QUIET)$(call echo-list,$(sort $(files_html)))
@@ -1833,7 +1854,8 @@ _show_html:
 _show_tex:
 	$(QUIET)$(echo_dt) "== TeX =="
 	$(QUIET)$(call echo-list,$(sort $(files_tex)))
-
+	$(QUIET)$(echo_dt) "DEPS: $(tex_deps)"
+	
 #$(call path-norm,)
 .SECONDEXPANSION:
 $(MAIN_DOC_BASENAME).aux $(MAIN_DOC_BASENAME).bbl:$(BIBFILES:$(BIBDIR)/%=$(ROOTDIR)/$(OUT_BIBDIR)/%)
