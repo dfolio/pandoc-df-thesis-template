@@ -1,0 +1,8 @@
+*.tex ident
+*.sty ident
+*.bib ident
+*.md ident
+*.svd ident
+*.pdf binary
+*.png binary
+*.emf binary
